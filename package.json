@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "echo \"Build completed\"",
+    "build": "vite build",
     "start": "node server.ts",
     "lint": "node --check server.ts"
   },
