@@ -1,0 +1,144 @@
+{
+  "customers": {
+    "user-sawrikasuraj": {
+      "id": "user-sawrikasuraj",
+      "email": "sawrikasuraj759@gmail.com",
+      "username": "Sawrika Suraj",
+      "plan": "business",
+      "coins": 500,
+      "isSuspended": false,
+      "botStatus": "online",
+      "createdAt": "2026-09-17T23:16:47.029Z",
+      "lastActive": "2026-10-17T23:16:59.551Z",
+      "adminNote": "Master Administrator & Owner Account",
+      "mediaUsed": 12,
+      "aiUsed": 45
+    }
+  },
+  "purchaseRequests": [],
+  "auditLogs": [
+    {
+      "id": "audit-1792279221220-8d7",
+      "timestamp": "2026-10-17T23:20:21.220Z",
+      "adminEmail": "epavenav@gmail.com",
+      "action": "UNAUTHORIZED_ADMIN_ATTEMPT",
+      "details": "Blocked attempt to access GET /api/admin/overview from IP 127.0.0.1"
+    },
+    {
+      "id": "audit-1792279007029",
+      "timestamp": "2026-10-17T23:16:47.029Z",
+      "adminEmail": "system",
+      "action": "SYSTEM_BOOT",
+      "details": "YASHI HALLS Admin Engine & Manual Purchase Management System initialised."
+    }
+  ],
+  "settings": {
+    "storeName": "YASHI HALLS Cloud Platform",
+    "brandTagline": "Professional Cyber Multi-Device WhatsApp Engine",
+    "adminWhatsapp": "0740712934",
+    "maintenanceMode": false,
+    "allowPublicSignups": true,
+    "planPricesCoins": {
+      "mini": 0,
+      "pro": 10,
+      "business": 30
+    },
+    "coinPackPricesLkr": {
+      "basic": 450,
+      "popular": 1200,
+      "mega": 2800
+    }
+  },
+  "voiceReplies": [
+    {
+      "id": "voice-greeting-hi",
+      "name": "Welcome & Greeting Voice (හායි / Hello)",
+      "triggers": [
+        "hi",
+        "hello",
+        "හායි",
+        "hey",
+        "hello yashi"
+      ],
+      "audioFileName": "seed_hi.mp3",
+      "audioPath": "/app/applet/data/voice_replies/seed_hi.mp3",
+      "audioUrl": "/api/voice-replies/audio/voice-greeting-hi",
+      "mimeType": "audio/mpeg",
+      "fileSizeBytes": 12582,
+      "fileSizeFormatted": "12.3 KB",
+      "durationSeconds": 2,
+      "language": "Both",
+      "enabled": true,
+      "scope": "GLOBAL",
+      "createdAt": "2026-10-17T23:16:49.165Z",
+      "playCount": 14
+    },
+    {
+      "id": "voice-morning-greeting",
+      "name": "Morning Greeting Voice (සුබ උදෑසනක්)",
+      "triggers": [
+        "good morning",
+        "සුබ උදෑසනක්",
+        "morning",
+        "gm"
+      ],
+      "audioFileName": "seed_good_morning.mp3",
+      "audioPath": "/app/applet/data/voice_replies/seed_good_morning.mp3",
+      "audioUrl": "/api/voice-replies/audio/voice-morning-greeting",
+      "mimeType": "audio/mpeg",
+      "fileSizeBytes": 15400,
+      "fileSizeFormatted": "15.0 KB",
+      "durationSeconds": 2,
+      "language": "Both",
+      "enabled": true,
+      "scope": "GLOBAL",
+      "createdAt": "2026-10-17T23:16:49.165Z",
+      "playCount": 8
+    },
+    {
+      "id": "voice-night-greeting",
+      "name": "Good Night Voice (සුබ රාත්‍රියක්)",
+      "triggers": [
+        "good night",
+        "සුබ රාත්‍රියක්",
+        "gn",
+        "sweet dreams"
+      ],
+      "audioFileName": "seed_good_night.mp3",
+      "audioPath": "/app/applet/data/voice_replies/seed_good_night.mp3",
+      "audioUrl": "/api/voice-replies/audio/voice-night-greeting",
+      "mimeType": "audio/mpeg",
+      "fileSizeBytes": 14200,
+      "fileSizeFormatted": "13.9 KB",
+      "durationSeconds": 2,
+      "language": "Both",
+      "enabled": true,
+      "scope": "GLOBAL",
+      "createdAt": "2026-10-17T23:16:49.165Z",
+      "playCount": 5
+    },
+    {
+      "id": "voice-how-are-you",
+      "name": "How Are You Voice (කොහොමද / How Are You)",
+      "triggers": [
+        "how are you",
+        "කොහොමද",
+        "how r u",
+        "සැප සනීප කොහොමද"
+      ],
+      "audioFileName": "seed_how_are_you.mp3",
+      "audioPath": "/app/applet/data/voice_replies/seed_how_are_you.mp3",
+      "audioUrl": "/api/voice-replies/audio/voice-how-are-you",
+      "mimeType": "audio/mpeg",
+      "fileSizeBytes": 13800,
+      "fileSizeFormatted": "13.5 KB",
+      "durationSeconds": 2,
+      "language": "Both",
+      "enabled": true,
+      "scope": "GLOBAL",
+      "createdAt": "2026-10-17T23:16:49.165Z",
+      "playCount": 11
+    }
+  ],
+  "walletTransactions": []
+}
