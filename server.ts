@@ -28,6 +28,16 @@ async function startServer() {
 
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+  // CORS configuration to support custom domains & Cloudflare Workers (connect.yashi-halls.workers.dev)
+  app.use((req: Request, res: Response, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
   // --- REST API ENDPOINTS ---
 
@@ -108,7 +118,7 @@ async function startServer() {
   });
 
   // Request WhatsApp Pairing Code for phone number
-  app.post('/api/bot/pair/code', async (req: Request, res: Response) => {
+  app.post(['/api/bot/pair/code', '/api/bot/pair'], async (req: Request, res: Response) => {
     try {
       const { phoneNumber } = req.body;
       if (!phoneNumber) {
