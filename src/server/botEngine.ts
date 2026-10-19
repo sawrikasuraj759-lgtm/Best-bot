@@ -1,6 +1,6 @@
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
-var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,"name",{value,configurable:true});import makeWASocket,{DisconnectReason,useMultiFileAuthState,fetchLatestBaileysVersion,Browsers,makeCacheableSignalKeyStore,downloadMediaMessage}from"@whiskeysockets/baileys";import pino from"pino";import QRCode from"qrcode";import fs from"fs";import path from"path";import{askGemini,analyzeAudioWithGemini,analyzeVideoWithGemini,generateCVWithGemini,chatAsYashiHallsAI,ChatMemoryItem}from"./geminiService";import{resolveSongAudio,searchYoutubeVideo}from"./audioService";import{resolveSearchImage}from"./imageService";import{adminStore}from"./adminStore";import{getWhatsAppVoiceBuffer}from"./voiceService";import{normalizeWhatsAppNumber}from"../utils/phone";import{resolveMediaFire}from"./mediafireService";import{searchMovies,formatMovieCard}from"./movieService";const BRAND_LOGO_URL="https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png";const WHATSAPP_CHANNEL_URL="https://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z";const OWNER_HOTLINE="0740712934";class BotEngine{constructor(userId="default"){this.sock=null;this.logs=[];this.maxLogs=500;this.startTime=null;this.reconnectAttempts=0;this.maxReconnectAttempts=20;this.isExplicitlyStopped=true;this.reconnectTimer=null;this.activePairingPhone=null;this.groupWarnings=new Map;this.activeQuizSessions=new Map;this.processedCalls=new Set;this.isQrReady=false;this.voiceCooldownMap=new Map;this.chatMemory=new Map;this.chatAiCooldownMap=new Map;this.smartReplyCooldownMap=new Map;
+var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,"name",{value,configurable:true});import makeWASocket,{DisconnectReason,useMultiFileAuthState,fetchLatestBaileysVersion,Browsers,makeCacheableSignalKeyStore,downloadMediaMessage}from"@whiskeysockets/baileys";import pino from"pino";import QRCode from"qrcode";import fs from"fs";import path from"path";import{askGemini,analyzeAudioWithGemini,analyzeVideoWithGemini,generateCVWithGemini,chatAsYashiHallsAI,ChatMemoryItem}from"./geminiService";import{resolveSongAudio,searchYoutubeVideo}from"./audioService";import{resolveSearchImage}from"./imageService";import{adminStore}from"./adminStore";import{getWhatsAppVoiceBuffer}from"./voiceService";import{normalizeWhatsAppNumber}from"../utils/phone";import{resolveMediaFire}from"./mediafireService";import{searchMovies,formatMovieCard}from"./movieService";const BRAND_LOGO_URL="https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png";const WHATSAPP_CHANNEL_URL="https://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z";const OWNER_HOTLINE="0740712934";class BotEngine{constructor(userId="default"){this.sock=null;this.logs=[];this.maxLogs=500;this.startTime=null;this.reconnectAttempts=0;this.maxReconnectAttempts=20;this.isExplicitlyStopped=true;this.reconnectTimer=null;this.activePairingPhone=null;this.groupWarnings=new Map;this.activeQuizSessions=new Map;this.processedCalls=new Set;this.isQrReady=false;this.voiceCooldownMap=new Map;this.chatMemory=new Map;this.start247Watchdog();this.chatAiCooldownMap=new Map;this.smartReplyCooldownMap=new Map;
     this.cachedLogoBuffer=null;
     this.lastCachedLogoUrl='';
     try {
@@ -8,7 +8,34 @@ var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,
         this.cachedLogoBuffer = fs.readFileSync('/app/applet/data/bot_logo_opt.jpg');
         this.lastCachedLogoUrl = BRAND_LOGO_URL;
       }
-    } catch (e) {}this.smartReplyCooldownMap=new Map;this.state={connectionStatus:"disconnected",isOnline:false,pairedNumber:null,qrCodeDataUrl:null,pairingCode:null,uptimeSeconds:0,startedAt:null,lastPingMs:18,totalMessagesReceived:0,totalCommandsExecuted:0,totalAiQueries:0,activeGroupCount:0,incomingCallsCount:0,callsRejectedCount:0,autoRepliesSentCount:0,voiceAutoRepliesSentCount:0,recentCalls:[],config:{botName:"YASHI HALLS MINI",botLogoUrl:"https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png",prefix:".",mode:"public",ownerNumber:"94740712934",autoReadStatus:true,plan:"mini",antiLink:false,antiSpam:false,welcomeMessage:true,welcomeTemplate:"Welcome @user to @group! Enjoy your stay.",callDetectorEnabled:true,voiceAutoReplyEnabled:true,channelAutoReact:true,channelReactEmojis:"\u2764\uFE0F,\u{1F525},\u26A1,\u{1F44D},\u{1F31F},\u{1F389},\u{1F680},\u{1F60D},\u{1F44F},\u{1F4AF},\u{1F929}",smartAutoReply:true,customGreetingSinhala:"\u0DC4\u0DCF\u0DBA\u0DD2 @user! \u{1F44B} \u0DB8\u0DB8 @bot WhatsApp Bot. \u0D94\u0DB6\u0DA7 \u0D8B\u0DAF\u0DC0\u0DCA \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0DB8\u0DB8 \u0DC3\u0DD6\u0DAF\u0DCF\u0DB1\u0DB8\u0DCA! \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DB6\u0DD0\u0DBD\u0DD3\u0DB8\u0DA7 @prefixmenu \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1. \u{1F60A}",customGreetingEnglish:"Hello @user! \u{1F44B} I am @bot WhatsApp Bot. Type @prefixmenu to view all commands.",customAutoReplies:[{id:"rule-price",keyword:"\u0DB8\u0DD2\u0DBD",reply:"\u{1F4B0} *YASHI HALLS Bot \u0DB8\u0DD2\u0DBD \u0D9C\u0DAB\u0DB1\u0DCA:*\n\u2022 MINI Plan: \u0DB1\u0DDC\u0DB8\u0DD2\u0DBD\u0DDA (FREE / 150 Limit)\n\u2022 PRO Plan: 10 Coins\n\u2022 BUSINESS Plan: 30 Coins\nDashboard \u0D91\u0D9A\u0DD9\u0DB1\u0DCA \u0D9A\u0DCA\u0DC2\u0DAB\u0DD2\u0D9A\u0DC0 \u0DC3\u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA \u0D9A\u0DBB\u0D9C\u0DAD \u0DC4\u0DD0\u0D9A!"},{id:"rule-channel",keyword:"channel",reply:"\u{1F517} *YASHI HALLS Official Channel:*\nhttps://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z\n\u0DB1\u0DC0\u0DAD\u0DB8 Bot updates \u0DC3\u0DC4 features \u0DC3\u0DB3\u0DC4\u0DCF \u0D85\u0DAF\u0DB8 \u0D91\u0D9A\u0DAD\u0DD4 \u0DC0\u0DB1\u0DCA\u0DB1! \u{1F680}"}]},quotas:{mediaRequestsUsed:0,mediaQuotaMax:150,aiRequestsUsed:0,aiQuotaMax:150,maxBotSlots:1}};this.userId=userId;const safeId=userId.replace(/[^a-zA-Z0-9_-]/g,"_");this.sessionDir=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","whatsapp_session"):path.resolve(process.cwd(),"data","sessions",safeId,"whatsapp_session");this.configFile=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","bot_config.json"):path.resolve(process.cwd(),"data","sessions",safeId,"bot_config.json");this.addLog("INFO",`BotEngine initialized for user: ${userId} with Dual Plan support (MINI & PRO).`);this.loadSavedConfig();this.checkExistingSession()}static{__name(this,"BotEngine")}loadSavedConfig(){try{if(fs.existsSync(this.configFile)){const raw=fs.readFileSync(this.configFile,"utf-8");const parsed=JSON.parse(raw);this.state.config={...this.state.config,...parsed};this.addLog("INFO",`Loaded persisted bot settings: AutoReply=${this.state.config.smartAutoReply?"ON":"OFF"}, ChannelReact=${this.state.config.channelAutoReact?"ON":"OFF"}`)}}catch{}}saveConfigToFile(){try{fs.mkdirSync(path.dirname(this.configFile),{recursive:true});fs.writeFileSync(this.configFile,JSON.stringify(this.state.config,null,2))}catch{}}addLog(level,message){const timestamp=new Date().toLocaleTimeString("en-US",{hour12:false});const log={id:`${Date.now()}-${Math.random().toString(36).substr(2,5)}`,timestamp,level,message};this.logs.push(log);if(this.logs.length>this.maxLogs){this.logs.shift()}}checkExistingSession(){try{if(fs.existsSync(this.sessionDir)){const files=fs.readdirSync(this.sessionDir);if(files.some(f=>f.includes("creds.json"))){this.addLog("INFO","Existing WhatsApp session credentials found in persistent storage.")}}else{fs.mkdirSync(this.sessionDir,{recursive:true})}}catch{}}getState(){const uptimeSeconds=this.startTime?Math.floor((Date.now()-this.startTime)/1e3):0;return{...this.state,uptimeSeconds}}getLogs(){return[...this.logs]}setPlan(plan){this.state.config.plan=plan;if(plan==="business"){this.state.config.botName="YASHI HALLS BUSINESS";this.state.quotas.mediaQuotaMax=999999;this.state.quotas.aiQuotaMax=999999;this.state.quotas.maxBotSlots=25;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F451} Tier upgraded to YASHI HALLS BUSINESS! 25 Bot Slots, Unlimited Media & AI, and VIP Enterprise SLA activated.")}else if(plan==="pro"){this.state.config.botName="YASHI HALLS PRO";this.state.quotas.mediaQuotaMax=1e3;this.state.quotas.aiQuotaMax=5e3;this.state.quotas.maxBotSlots=5;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F48E} Tier upgraded to YASHI HALLS PRO! All advanced features, multi-slots & unlimited quotas unlocked.")}else{this.state.config.botName="YASHI HALLS MINI";this.state.quotas.mediaQuotaMax=150;this.state.quotas.aiQuotaMax=150;this.state.quotas.maxBotSlots=1;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F7E2} Tier switched to YASHI HALLS MINI. Quotas set to 150 Daily Requests with all Pro & Business features unlocked!")}return this.getState()}async syncProfilePictureWithLogo(customLogoUrl){if(!this.sock||!this.state.isOnline){return{success:false,message:"WhatsApp bot must be online to update profile picture."}}const targetUrl=customLogoUrl||this.state.config.botLogoUrl||BRAND_LOGO_URL;try{const userJid=this.sock.user?.id;if(!userJid){return{success:false,message:"User JID not available."}}if(typeof this.sock.updateProfilePicture==="function"){await this.sock.updateProfilePicture(userJid,{url:targetUrl});if(customLogoUrl){this.state.config.botLogoUrl=customLogoUrl;this.saveConfigToFile()}this.addLog("INFO",`\u2705 Bot profile picture successfully updated to: ${targetUrl}`);return{success:true,message:"Bot profile picture updated successfully!"}}return{success:false,message:"Profile picture update not supported by current client session."}}catch(err){this.addLog("WARN",`Profile picture update attempt failed: ${err?.message}`);return{success:false,message:err?.message||"Failed to update profile picture"}}}updateConfig(newConfig){const customBotName=newConfig.botName;if(newConfig.plan){this.setPlan(newConfig.plan)}this.state.config={...this.state.config,...newConfig,...customBotName?{botName:customBotName}:{}};this.saveConfigToFile();this.addLog("INFO",`Configuration updated: Plan=${this.state.config.plan.toUpperCase()}, BotName="${this.state.config.botName}", Prefix="${this.state.config.prefix}", Logo="${this.state.config.botLogoUrl||"default"}"`);return this.state.config}resetQuotas(){this.state.quotas.mediaRequestsUsed=0;this.state.quotas.aiRequestsUsed=0;this.addLog("INFO","Daily quotas reset to 0.");return this.state.quotas}async start(requestedPhone){this.isExplicitlyStopped=false;this.reconnectAttempts=0;if(this.state.connectionStatus==="connected"&&this.sock){return{success:true,message:"Bot is already connected and online."}}if(requestedPhone){const cleanPhone=normalizeWhatsAppNumber(requestedPhone);if(cleanPhone)this.activePairingPhone=cleanPhone}if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}if(this.sock){try{this.sock.ev.removeAllListeners("connection.update");this.sock.ev.removeAllListeners("creds.update");this.sock.ev.removeAllListeners("messages.upsert");this.sock.ev.removeAllListeners("call");this.sock.ev.removeAllListeners("group-participants.update");try{this.sock.ws?.close()}catch(e){}try{this.sock.end(void 0)}catch(e){}}catch(err){}this.sock=null}try{this.state.connectionStatus="connecting";this.addLog("INFO",`Starting ${this.state.config.botName} WhatsApp Baileys connection...`);if(!fs.existsSync(this.sessionDir)){fs.mkdirSync(this.sessionDir,{recursive:true})}const{state:authState,saveCreds}=await useMultiFileAuthState(this.sessionDir);await saveCreds();const{version}=await fetchLatestBaileysVersion();this.addLog("INFO",`Using Baileys protocol v${version.join(".")}`);const logger=pino({level:"silent"});this.sock=makeWASocket({version,logger,printQRInTerminal:false,auth:{creds:authState.creds,keys:makeCacheableSignalKeyStore(authState.keys,logger)},browser:Browsers.ubuntu("Chrome"),syncFullHistory:false,markOnlineOnConnect:false,connectTimeoutMs:12e4,defaultQueryTimeoutMs:12e4,keepAliveIntervalMs:25e3,generateHighQualityLinkPreview:true,getMessage:__name(async()=>void 0,"getMessage")});this.sock.ev.on("creds.update",saveCreds);this.sock.ev.on("connection.update",async update=>{const{connection,lastDisconnect,qr}=update;if(qr){if(!this.activePairingPhone&&!this.state.pairingCode){this.isQrReady=true;this.state.connectionStatus="qr_ready";try{const dataUrl=await QRCode.toDataURL(qr,{margin:2,scale:7});this.state.qrCodeDataUrl=dataUrl;this.addLog("INFO","QR code generated and ready for WhatsApp scan.")}catch(err){this.addLog("ERROR","Failed to generate QR Code data URL.")}}}if(connection==="close"){this.isQrReady=false;if(this.isExplicitlyStopped){this.state.isOnline=false;this.state.connectionStatus="disconnected";this.startTime=null;return}const statusCode=lastDisconnect?.error?.output?.statusCode;const errorMsg=String(lastDisconnect?.error?.message||lastDisconnect?.error||"");const isRestartRequired=statusCode===DisconnectReason.restartRequired;const isBadSession=statusCode===DisconnectReason.loggedOut||statusCode===401||statusCode===403||errorMsg.includes("Bad MAC")||errorMsg.includes("Failed to decrypt");const shouldReconnect=!isBadSession&&statusCode!==DisconnectReason.loggedOut&&!this.isExplicitlyStopped;this.state.isOnline=false;this.state.connectionStatus=shouldReconnect?"reconnecting":"disconnected";this.startTime=null;this.addLog("WARN",`Connection closed. Reason: ${DisconnectReason[statusCode]||statusCode||errorMsg||"Unknown"}. Reconnect=${shouldReconnect}`);if(isBadSession){this.addLog("WARN","Corrupted or expired session credentials detected (Bad MAC/401). Clearing stored session files.");this.clearSessionFiles();this.state.pairedNumber=null;this.state.connectionStatus="disconnected";if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}return}else if(shouldReconnect){if(isRestartRequired){this.addLog("INFO","WhatsApp stream restart requested (handshake/pairing update). Reconnecting in 500ms...");if(this.reconnectTimer)clearTimeout(this.reconnectTimer);this.reconnectTimer=setTimeout(()=>{this.reconnectTimer=null;if(!this.isExplicitlyStopped){this.start(this.activePairingPhone||requestedPhone)}},500)}else{const isUnregistered=!this.sock?.authState?.creds?.registered;const maxAttempts=isUnregistered?5:this.maxReconnectAttempts;if(this.reconnectAttempts<maxAttempts){this.reconnectAttempts++;this.addLog("INFO",`Reconnection attempt ${this.reconnectAttempts}/${maxAttempts} in 2.5 seconds...`);if(this.reconnectTimer)clearTimeout(this.reconnectTimer);this.reconnectTimer=setTimeout(()=>{this.reconnectTimer=null;if(!this.isExplicitlyStopped){this.start(this.activePairingPhone||requestedPhone)}},2500)}else{this.addLog("ERROR","Reconnection attempts timed out. Bot paused.");this.state.connectionStatus="disconnected"}}}}else if(connection==="open"){this.reconnectAttempts=0;this.activePairingPhone=null;this.state.isOnline=true;this.state.connectionStatus="connected";this.state.qrCodeDataUrl=null;this.state.pairingCode=null;this.startTime=Date.now();this.state.startedAt=new Date().toISOString();const userJid=this.sock?.user?.id||"";const phoneNum=userJid.split(":")[0]||userJid.split("@")[0]||"Unknown";this.state.pairedNumber=phoneNum;this.addLog("INFO",`\u2705 Connection established! ${this.state.config.botName} (${this.state.config.plan.toUpperCase()}) is now ONLINE for +${phoneNum}`);this.addLog("INFO",`Ready to respond to commands with prefix '${this.state.config.prefix}'.`);try{const targetJid=userJid.includes(":")?`${userJid.split(":")[0]}@s.whatsapp.net`:userJid.includes("@")?userJid:`${userJid}@s.whatsapp.net`;if(targetJid&&this.sock){const logoUrl = this.state.config.botLogoUrl || BRAND_LOGO_URL;
+    } catch (e) {}this.smartReplyCooldownMap=new Map;this.state={connectionStatus:"disconnected",isOnline:false,pairedNumber:null,qrCodeDataUrl:null,pairingCode:null,uptimeSeconds:0,startedAt:null,lastPingMs:18,totalMessagesReceived:0,totalCommandsExecuted:0,totalAiQueries:0,activeGroupCount:0,incomingCallsCount:0,callsRejectedCount:0,autoRepliesSentCount:0,voiceAutoRepliesSentCount:0,recentCalls:[],config:{botName:"YASHI HALLS MINI",botLogoUrl:"https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png",prefix:".",mode:"public",ownerNumber:"94740712934",autoReadStatus:true,plan:"mini",antiLink:false,antiSpam:false,welcomeMessage:true,welcomeTemplate:"Welcome @user to @group! Enjoy your stay.",callDetectorEnabled:true,voiceAutoReplyEnabled:true,channelAutoReact:true,channelReactEmojis:"\u2764\uFE0F,\u{1F525},\u26A1,\u{1F44D},\u{1F31F},\u{1F389},\u{1F680},\u{1F60D},\u{1F44F},\u{1F4AF},\u{1F929}",smartAutoReply:true,customGreetingSinhala:"\u0DC4\u0DCF\u0DBA\u0DD2 @user! \u{1F44B} \u0DB8\u0DB8 @bot WhatsApp Bot. \u0D94\u0DB6\u0DA7 \u0D8B\u0DAF\u0DC0\u0DCA \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0DB8\u0DB8 \u0DC3\u0DD6\u0DAF\u0DCF\u0DB1\u0DB8\u0DCA! \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DB6\u0DD0\u0DBD\u0DD3\u0DB8\u0DA7 @prefixmenu \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1. \u{1F60A}",customGreetingEnglish:"Hello @user! \u{1F44B} I am @bot WhatsApp Bot. Type @prefixmenu to view all commands.",customAutoReplies:[{id:"rule-price",keyword:"\u0DB8\u0DD2\u0DBD",reply:"\u{1F4B0} *YASHI HALLS Bot \u0DB8\u0DD2\u0DBD \u0D9C\u0DAB\u0DB1\u0DCA:*\n\u2022 MINI Plan: \u0DB1\u0DDC\u0DB8\u0DD2\u0DBD\u0DDA (FREE / 150 Limit)\n\u2022 PRO Plan: 10 Coins\n\u2022 BUSINESS Plan: 30 Coins\nDashboard \u0D91\u0D9A\u0DD9\u0DB1\u0DCA \u0D9A\u0DCA\u0DC2\u0DAB\u0DD2\u0D9A\u0DC0 \u0DC3\u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA \u0D9A\u0DBB\u0D9C\u0DAD \u0DC4\u0DD0\u0D9A!"},{id:"rule-channel",keyword:"channel",reply:"\u{1F517} *YASHI HALLS Official Channel:*\nhttps://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z\n\u0DB1\u0DC0\u0DAD\u0DB8 Bot updates \u0DC3\u0DC4 features \u0DC3\u0DB3\u0DC4\u0DCF \u0D85\u0DAF\u0DB8 \u0D91\u0D9A\u0DAD\u0DD4 \u0DC0\u0DB1\u0DCA\u0DB1! \u{1F680}"}]},quotas:{mediaRequestsUsed:0,mediaQuotaMax:150,aiRequestsUsed:0,aiQuotaMax:150,maxBotSlots:1}};this.userId=userId;const safeId=userId.replace(/[^a-zA-Z0-9_-]/g,"_");this.sessionDir=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","whatsapp_session"):path.resolve(process.cwd(),"data","sessions",safeId,"whatsapp_session");this.configFile=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","bot_config.json"):path.resolve(process.cwd(),"data","sessions",safeId,"bot_config.json");this.addLog("INFO",`BotEngine initialized for user: ${userId} with Dual Plan support (MINI & PRO).`);this.loadSavedConfig();this.checkExistingSession()}static{__name(this,"BotEngine")}loadSavedConfig(){try{if(fs.existsSync(this.configFile)){const raw=fs.readFileSync(this.configFile,"utf-8");const parsed=JSON.parse(raw);this.state.config={...this.state.config,...parsed};this.addLog("INFO",`Loaded persisted bot settings: AutoReply=${this.state.config.smartAutoReply?"ON":"OFF"}, ChannelReact=${this.state.config.channelAutoReact?"ON":"OFF"}`)}}catch{}}saveConfigToFile(){try{fs.mkdirSync(path.dirname(this.configFile),{recursive:true});fs.writeFileSync(this.configFile,JSON.stringify(this.state.config,null,2))}catch{}}addLog(level,message){const timestamp=new Date().toLocaleTimeString("en-US",{hour12:false});const log={id:`${Date.now()}-${Math.random().toString(36).substr(2,5)}`,timestamp,level,message};this.logs.push(log);if(this.logs.length>this.maxLogs){this.logs.shift()}}checkExistingSession(){try{if(fs.existsSync(this.sessionDir)){const files=fs.readdirSync(this.sessionDir);if(files.some(f=>f.includes("creds.json"))){this.addLog("INFO","Existing WhatsApp session credentials found in persistent storage.")}}else{fs.mkdirSync(this.sessionDir,{recursive:true})}}catch{}}getState(){const uptimeSeconds=this.startTime?Math.floor((Date.now()-this.startTime)/1e3):0;return{...this.state,uptimeSeconds}}getLogs(){return[...this.logs]}setPlan(plan){this.state.config.plan=plan;if(plan==="business"){this.state.config.botName="YASHI HALLS BUSINESS";this.state.quotas.mediaQuotaMax=999999;this.state.quotas.aiQuotaMax=999999;this.state.quotas.maxBotSlots=25;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F451} Tier upgraded to YASHI HALLS BUSINESS! 25 Bot Slots, Unlimited Media & AI, and VIP Enterprise SLA activated.")}else if(plan==="pro"){this.state.config.botName="YASHI HALLS PRO";this.state.quotas.mediaQuotaMax=1e3;this.state.quotas.aiQuotaMax=5e3;this.state.quotas.maxBotSlots=5;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F48E} Tier upgraded to YASHI HALLS PRO! All advanced features, multi-slots & unlimited quotas unlocked.")}else{this.state.config.botName="YASHI HALLS MINI";this.state.quotas.mediaQuotaMax=150;this.state.quotas.aiQuotaMax=150;this.state.quotas.maxBotSlots=1;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F7E2} Tier switched to YASHI HALLS MINI. Quotas set to 150 Daily Requests with all Pro & Business features unlocked!")}return this.getState()}async syncProfilePictureWithLogo(customLogoUrl){if(!this.sock||!this.state.isOnline){return{success:false,message:"WhatsApp bot must be online to update profile picture."}}const targetUrl=customLogoUrl||this.state.config.botLogoUrl||BRAND_LOGO_URL;try{const userJid=this.sock.user?.id;if(!userJid){return{success:false,message:"User JID not available."}}if(typeof this.sock.updateProfilePicture==="function"){await this.sock.updateProfilePicture(userJid,{url:targetUrl});if(customLogoUrl){this.state.config.botLogoUrl=customLogoUrl;this.saveConfigToFile()}this.addLog("INFO",`\u2705 Bot profile picture successfully updated to: ${targetUrl}`);return{success:true,message:"Bot profile picture updated successfully!"}}return{success:false,message:"Profile picture update not supported by current client session."}}catch(err){this.addLog("WARN",`Profile picture update attempt failed: ${err?.message}`);return{success:false,message:err?.message||"Failed to update profile picture"}}}updateConfig(newConfig){const customBotName=newConfig.botName;if(newConfig.plan){this.setPlan(newConfig.plan)}this.state.config={...this.state.config,...newConfig,...customBotName?{botName:customBotName}:{}};this.saveConfigToFile();this.addLog("INFO",`Configuration updated: Plan=${this.state.config.plan.toUpperCase()}, BotName="${this.state.config.botName}", Prefix="${this.state.config.prefix}", Logo="${this.state.config.botLogoUrl||"default"}"`);return this.state.config}resetQuotas(){this.state.quotas.mediaRequestsUsed=0;this.state.quotas.aiRequestsUsed=0;this.addLog("INFO","Daily quotas reset to 0.");return this.state.quotas}start247Watchdog(){if(this.watchdogTimer)clearInterval(this.watchdogTimer);this.watchdogTimer=setInterval(async()=>{try{if(this.isExplicitlyStopped)return;const hasCreds=this.hasExistingSession();if(hasCreds&&!this.state.isOnline&&this.state.connectionStatus!=='reconnecting'){this.addLog('WARN','[24/7 Watchdog] Bot registered but disconnected. Auto-triggering instant reconnection...');this.start().catch(()=>{})}else if(this.state.isOnline&&this.sock?.user?.id){await this.sock.sendPresenceUpdate('available').catch(()=>{})}}catch(err){}},25000)}async start(requestedPhone){this.isExplicitlyStopped=false;this.reconnectAttempts=0;if(this.state.connectionStatus==="connected"&&this.sock){return{success:true,message:"Bot is already connected and online."}}if(requestedPhone){const cleanPhone=normalizeWhatsAppNumber(requestedPhone);if(cleanPhone)this.activePairingPhone=cleanPhone}if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}if(this.sock){try{this.sock.ev.removeAllListeners("connection.update");this.sock.ev.removeAllListeners("creds.update");this.sock.ev.removeAllListeners("messages.upsert");this.sock.ev.removeAllListeners("call");this.sock.ev.removeAllListeners("group-participants.update");try{this.sock.ws?.close()}catch(e){}try{this.sock.end(void 0)}catch(e){}}catch(err){}this.sock=null}try{this.state.connectionStatus="connecting";this.addLog("INFO",`Starting ${this.state.config.botName} WhatsApp Baileys connection...`);if(!fs.existsSync(this.sessionDir)){fs.mkdirSync(this.sessionDir,{recursive:true})}const{state:authState,saveCreds}=await useMultiFileAuthState(this.sessionDir);await saveCreds();const{version}=await fetchLatestBaileysVersion();this.addLog("INFO",`Using Baileys protocol v${version.join(".")}`);const logger=pino({level:"silent"});this.sock=makeWASocket({version,logger,printQRInTerminal:false,auth:{creds:authState.creds,keys:makeCacheableSignalKeyStore(authState.keys,logger)},browser:Browsers.ubuntu("Chrome"),syncFullHistory:false,markOnlineOnConnect:false,connectTimeoutMs:12e4,defaultQueryTimeoutMs:12e4,keepAliveIntervalMs:25e3,generateHighQualityLinkPreview:true,getMessage:__name(async()=>void 0,"getMessage")});this.sock.ev.on("creds.update",saveCreds);this.sock.ev.on("connection.update",async update=>{const{connection,lastDisconnect,qr}=update;if(qr){if(!this.activePairingPhone&&!this.state.pairingCode){this.isQrReady=true;this.state.connectionStatus="qr_ready";try{const dataUrl=await QRCode.toDataURL(qr,{margin:2,scale:7});this.state.qrCodeDataUrl=dataUrl;this.addLog("INFO","QR code generated and ready for WhatsApp scan.")}catch(err){this.addLog("ERROR","Failed to generate QR Code data URL.")}}}if(connection==="close"){this.isQrReady=false;if(this.isExplicitlyStopped){this.state.isOnline=false;this.state.connectionStatus="disconnected";this.startTime=null;return}const statusCode=lastDisconnect?.error?.output?.statusCode;const errorMsg=String(lastDisconnect?.error?.message||lastDisconnect?.error||"");const isRestartRequired=statusCode===DisconnectReason.restartRequired;const isBadSession=statusCode===DisconnectReason.loggedOut||statusCode===401||statusCode===403||errorMsg.includes("Bad MAC")||errorMsg.includes("Failed to decrypt");const shouldReconnect=!isBadSession&&statusCode!==DisconnectReason.loggedOut&&!this.isExplicitlyStopped;this.state.isOnline=false;this.state.connectionStatus=shouldReconnect?"reconnecting":"disconnected";this.startTime=null;this.addLog("WARN",`Connection closed. Reason: ${DisconnectReason[statusCode]||statusCode||errorMsg||"Unknown"}. Reconnect=${shouldReconnect}`);if(isBadSession){this.addLog("WARN","Corrupted or expired session credentials detected (Bad MAC/401). Clearing stored session files.");this.clearSessionFiles();this.state.pairedNumber=null;this.state.connectionStatus="disconnected";if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}return}else if(shouldReconnect){if(isRestartRequired){this.addLog("INFO","WhatsApp stream restart requested (handshake/pairing update). Reconnecting in 500ms...");if(this.reconnectTimer)clearTimeout(this.reconnectTimer);this.reconnectTimer=setTimeout(()=>{this.reconnectTimer=null;if(!this.isExplicitlyStopped){this.start(this.activePairingPhone||requestedPhone)}},500)}else{const isUnregistered = !this.sock?.authState?.creds?.registered;
+        if (!isUnregistered && !this.isExplicitlyStopped) {
+          // 24/7 Always-On Infinite Recovery for registered bots
+          this.reconnectAttempts++;
+          const delayMs = Math.min(2000 + (this.reconnectAttempts * 1000), 10000);
+          this.addLog("INFO", `[24/7 Keep-Alive] Auto-reconnecting attempt #${this.reconnectAttempts} in ${(delayMs/1000).toFixed(1)}s (Non-stop mode)...`);
+          if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            if (!this.isExplicitlyStopped) {
+              this.start(this.activePairingPhone || requestedPhone);
+            }
+          }, delayMs);
+        } else if (this.reconnectAttempts < 5) {
+          this.reconnectAttempts++;
+          this.addLog("INFO", `Pairing handshake retry ${this.reconnectAttempts}/5 in 2.5s...`);
+          if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            if (!this.isExplicitlyStopped) {
+              this.start(this.activePairingPhone || requestedPhone);
+            }
+          }, 2500);
+        } else {
+          this.addLog("ERROR", "Initial pairing code timeout. Bot standby.");
+          this.state.connectionStatus = "disconnected";
+        }
+      }}}else if(connection==="open"){this.reconnectAttempts=0;this.activePairingPhone=null;this.state.isOnline=true;this.state.connectionStatus="connected";this.state.qrCodeDataUrl=null;this.state.pairingCode=null;this.startTime=Date.now();this.state.startedAt=new Date().toISOString();const userJid=this.sock?.user?.id||"";const phoneNum=userJid.split(":")[0]||userJid.split("@")[0]||"Unknown";this.state.pairedNumber=phoneNum;this.addLog("INFO",`\u2705 Connection established! ${this.state.config.botName} (${this.state.config.plan.toUpperCase()}) is now ONLINE for +${phoneNum}`);this.addLog("INFO",`Ready to respond to commands with prefix '${this.state.config.prefix}'.`);try{const targetJid=userJid.includes(":")?`${userJid.split(":")[0]}@s.whatsapp.net`:userJid.includes("@")?userJid:`${userJid}@s.whatsapp.net`;if(targetJid&&this.sock){const logoUrl = this.state.config.botLogoUrl || BRAND_LOGO_URL;
         // Update WhatsApp profile display name to YASHI HALLS
         try {
           if (typeof this.sock.updateProfileName === "function") {
@@ -633,289 +660,418 @@ _Searching for "${cleanQuery}" in Sinhala subtitle & dub cloud..._`);try{const r
     return { url: currentLogoUrl };
   }
 
-  async cmdMenu(jid,msg,categoryArg){const p=this.state.config.prefix;const cat=categoryArg?.trim().toLowerCase();const logoUrl=this.state.config.botLogoUrl||BRAND_LOGO_URL;if(cat==="1"||cat==="download"||cat==="downloads"||cat==="dl"||cat==="mediafire"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F4E5} *DOWNLOAD SUITE (\u0DB6\u0DCF\u0D9C\u0DAD \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DCA)* \u{1F4E6}
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
+  async cmdMenu(jid: string, msg: any, categoryArg?: string) {
+    const p = this.state.config.prefix;
+    const cat = (categoryArg || '').trim().toLowerCase();
+    const botName = this.state.config.botName || 'YASHI HALLS';
+    const plan = (this.state.config.plan || 'PRO').toUpperCase();
 
-\u250C\u2500\u2500 \u26A1 *AVAILABLE DOWNLOAD COMMANDS*
-\u2502 \u27A3 *1.1* or *${p}mediafire <link>* \u2014 MediaFire Direct Downloader \u{1F4E6}
-\u2502 \u27A3 *1.2* or *${p}song <title>* \u2014 High Quality MP3 Song Download \u{1F3B5}
-\u2502 \u27A3 *1.3* or *${p}video <title>* \u2014 High-Definition MP4 Clip \u{1F3AC}
-\u2502 \u27A3 *1.4* or *${p}tiktok <url>* \u2014 TikTok No-Watermark HD Video \u{1F4F1}
-\u2502 \u27A3 *1.5* or *${p}fb <url>* \u2014 Facebook HD/SD Video Downloader \u{1F4F9}
-\u2502 \u27A3 *1.6* or *${p}ig <url>* \u2014 Instagram Reels & Post Downloader \u{1F4F8}
-\u2502 \u27A3 *1.7* or *${p}twitter <url>* \u2014 Twitter / X Video Downloader \u{1F426}
-\u2502 \u27A3 *1.8* or *${p}apk <name>* \u2014 Android APK Downloader \u{1F4F2}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    // CATEGORY 1: DOWNLOAD SUITE
+    if (cat === '1' || cat === 'download' || cat === 'downloads' || cat === 'dl' || cat === 'mediafire') {
+      const text = `
+╭───「 *DOWNLOAD SUITE* 」───╮
+│
+│ 🎵 *${p}song <title>*
+│    Download high-quality MP3 audio track
+│
+│ 🎬 *${p}video <title>*
+│    Download high-definition MP4 video clip
+│
+│ 📦 *${p}mediafire <url>*
+│    Direct cloud file downloader (Auto-detect)
+│
+│ 📱 *${p}tiktok <url>*
+│    TikTok HD video without watermark
+│
+│ 📘 *${p}fb <url>*
+│    Facebook public video (HD / SD)
+│
+│ 📸 *${p}ig <url>*
+│    Instagram Reels, Posts & Videos
+│
+│ 🐦 *${p}twitter <url>*
+│    Twitter / X video downloader
+│
+│ 📲 *${p}apk <app name>*
+│    Download Android APK package
+│
+╰────────────────────────────╯
+💡 *Usage:* Type *${p}song Faded* or paste any MediaFire link.
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
 
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (1.1, 1.2...) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1:*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}mediafire https://www.mediafire.com/...*_
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}song Alan Walker Faded*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F4E5} DOWNLOAD SUITE \u{1F4E5}",mode:"buttons",buttons:[{buttonId:`${p}menu movie`,buttonText:{displayText:"\u{1F3AC} MOVIES & DUBS"}},{buttonId:`${p}menu ai`,buttonText:{displayText:"\u{1F916} AI ASSISTANT"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="2"||cat==="movie"||cat==="movies"||cat==="film"||cat==="films"||cat==="filmdub"||cat==="dub"||cat==="sinhalasub"||cat==="cinesubz"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F3AC} *MOVIES & SINHALA DUBS (\u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7)* \u{1F37F}
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F3A5} *AVAILABLE FILM COMMANDS*
-\u2502 \u27A3 *2.1* or *${p}film <name>* \u2014 Search Movie & Direct Download Links \u{1F3A5}
-\u2502 \u27A3 *2.2* or *${p}filmdub <name>* \u2014 Sinhala Dubbed Movies & Cartoons \u{1F399}\uFE0F
-\u2502 \u27A3 *2.3* or *${p}movie <name>* \u2014 Movie Details, Ratings & Posters \u{1F37F}
-\u2502 \u27A3 *2.4* or *${p}cinesubz <name>* \u2014 Cinesubz Direct Links & Subtitles \u{1F3AC}
-\u2502 \u27A3 *2.5* or *${p}sinhalasub <name>* \u2014 Baiscope / Sinhalasub Subtitles \u{1F4DD}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (2.1, 2.2...) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1:*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}film Avatar*_
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}filmdub Kung Fu Panda*_
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}filmdub KGF 2*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F3AC} MOVIES & SINHALA DUBS \u{1F3AC}",mode:"buttons",buttons:[{buttonId:`${p}filmdub Kung Fu Panda`,buttonText:{displayText:"\u{1F399}\uFE0F KUNG FU PANDA DUB"}},{buttonId:`${p}menu download`,buttonText:{displayText:"\u{1F4E5} DOWNLOAD SUITE"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="3"||cat==="ai"||cat==="voice"||cat==="vision"||cat==="chat"||cat==="gemini"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F916} *AI VOICE & VISION INTELLIGENCE* \u{1F9E0}
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F4A1} *AVAILABLE AI CAPABILITIES*
-\u2502 \u27A3 \u{1F399}\uFE0F *Voice Note AI Listener:* Send any voice note for instant AI understanding & response!
-\u2502 \u27A3 \u{1F4F9} *Video Scene Vision:* Send any video clip for scene analysis!
-\u2502 \u27A3 *3.1* or *${p}ai <prompt>* \u2014 Ask any question to YASHI HALLS AI Engine \u{1F916}
-\u2502 \u27A3 *3.2* or *${p}translate <lang> <text>* \u2014 Instant Language Translation \u{1F310}
-\u2502 \u27A3 *3.3* or *${p}summarize <text>* \u2014 Smart Text & Article Summarizer \u{1F4DD}
-\u2502 \u27A3 *3.4* or *${p}write <prompt>* \u2014 Essay, Speech & Email Creator \u270D\uFE0F
-\u2502 \u27A3 *3.5* or *${p}code <prompt>* \u2014 Programming & Code Solutions \u{1F4BB}
-\u2502 \u27A3 *3.6* or *${p}imagine <prompt>* \u2014 AI Concept Visualizer \u{1F3A8}
-\u2502 \u27A3 *3.7* or *${p}voicetrans <lang>* \u2014 AI Voice-to-Voice Translator \u{1F399}\uFE0F
-\u2502 \u27A3 *3.8* or *${p}aisticker <prompt>* \u2014 Instant AI Text-to-Sticker Maker \u{1F3A8}
-\u2502 \u27A3 *3.9* or *${p}dubvideo <link>* \u2014 Video Sinhala Dubber & Summarizer \u{1F3AC}
-\u2502 \u27A3 *3.10* or *${p}shazam* \u2014 Voice Song Finder (Shazam-style) \u{1F3B5}
-\u2502 \u27A3 *3.11* or *${p}transcribe* \u2014 Sinhala Voice Note Transcriber \u270D\uFE0F
-\u2502 \u27A3 *3.12* or *${p}math <problem>* \u2014 Math & Physics Step-by-Step Solver \u{1F9EE}
-\u2502 \u27A3 *3.13* or *${p}food <name>* \u2014 Food & Calorie Nutrition Analyzer \u{1F957}
-\u2502 \u27A3 *3.14* or *${p}cv <details>* \u2014 Professional CV & Resume Builder \u{1F4C4}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (3.1, 3.2...) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1:*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}ai \u0DC1\u0DCA\u200D\u0DBB\u0DD3 \u0DBD\u0D82\u0D9A\u0DCF\u0DC0\u0DDA \u0D89\u0DAD\u0DD2\u0DC4\u0DCF\u0DC3\u0DBA \u0DB4\u0DD0\u0DC4\u0DD0\u0DAF\u0DD2\u0DBD\u0DD2 \u0D9A\u0DBB\u0DB1\u0DCA\u0DB1*_
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}aisticker cute cat wearing sunglasses*_
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}math solve 2x^2 + 5x - 3 = 0*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F916} YASHI HALLS AI SUITE \u{1F916}",mode:"buttons",buttons:[{buttonId:`${p}aisticker cute cyber cat`,buttonText:{displayText:"\u{1F3A8} AI STICKER"}},{buttonId:`${p}menu daily`,buttonText:{displayText:"\u{1F4CA} DAILY & FINANCE"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="4"||cat==="group"||cat==="groups"||cat==="admin"||cat==="admins"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F465} *GROUP COMMANDS SUITE* \u{1F6E1}\uFE0F
-   _(\u0DC3\u0DB8\u0DD6\u0DC4 \u0DB4\u0DCF\u0DBD\u0DB1 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0D91\u0D9A\u0DAD\u0DD4\u0DC0)_
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F6E1}\uFE0F *AVAILABLE GROUP COMMANDS*
-\u2502 \u27A3 *4.1* or *${p}groupinfo* \u2014 Group members & creation info
-\u2502 \u27A3 *4.2* or *${p}admins* \u2014 Tag all group administrators
-\u2502 \u27A3 *4.3* or *${p}tagall [msg]* \u2014 Tag all members with message
-\u2502 \u27A3 *4.4* or *${p}kick @user* (or reply) \u2014 Remove participant
-\u2502 \u27A3 *4.5* or *${p}add <number>* \u2014 Add member (e.g. ${p}add 94740712934)
-\u2502 \u27A3 *4.6* or *${p}mute* / *${p}unmute* \u2014 Admins-only / All chat mode
-\u2502 \u27A3 *4.7* or *${p}antilink on/off* \u2014 Auto-delete external links
-\u2502 \u27A3 *4.8* or *${p}hidetag <msg>* \u2014 Ghost tag all members
-\u2502 \u27A3 *4.9* or *${p}link* \u2014 Get WhatsApp group invite link
-\u2502 \u27A3 *${p}promote @user* / *${p}demote @user* \u2014 Admin rank control
-\u2502 \u27A3 *${p}warn @user* / *${p}warns* / *${p}resetwarn* \u2014 Warning strikes
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0DC3\u0DA7\u0DC4\u0DB1:* Group admin \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DC3\u0DB3\u0DC4\u0DCF Bot \u0DC4\u0DA7 Admin \u0DB6\u0DBD\u0DAD\u0DBD \u0DBD\u0DB6\u0DCF \u0DAF\u0DD9\u0DB1\u0DCA\u0DB1.
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F465} GROUP COMMANDS SUITE \u{1F465}",mode:"buttons",buttons:[{buttonId:`${p}groupinfo`,buttonText:{displayText:"\u{1F465} GROUP INFO"}},{buttonId:`${p}admins`,buttonText:{displayText:"\u{1F451} LIST ADMINS"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="5"||cat==="games"||cat==="game"||cat==="play"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F3AE} *GAMES & ENTERTAINMENT* \u{1F3B2}
-   _(\u0DC0\u0DD2\u0DB1\u0DDD\u0DAF\u0DCF\u0DAD\u0DCA\u0DB8\u0D9A \u0D9A\u0DCA\u200D\u0DBB\u0DD3\u0DA9\u0DCF \u0D91\u0D9A\u0DAD\u0DD4\u0DC0)_
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F3B2} *AVAILABLE GAMES*
-\u2502 \u27A3 *5.1* or *${p}quiz* \u2014 Interactive Trivia Quiz Challenge \u{1F9E0}
-\u2502 \u27A3 *5.2* or *${p}roll* \u2014 Roll a 6-Sided Dice \u{1F3B2}
-\u2502 \u27A3 *5.3* or *${p}flip* \u2014 Coin Toss (Heads or Tails) \u{1FA99}
-\u2502 \u27A3 *5.4* or *${p}guess <1-10>* \u2014 Guess the Mystery Number \u{1F3AF}
-\u2502 \u27A3 *5.5* or *${p}slot* \u2014 Casino Slot Machine Game \u{1F3B0}
-\u2502 \u27A3 *5.6* or *${p}leaderboard* \u2014 Top Players Rank Leaderboard \u{1F3C6}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0D9A\u0DCA\u200D\u0DBB\u0DD3\u0DA9\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (5.1, 5.2...) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1!*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}slot* | *${p}quiz* | *${p}roll*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F3AE} MINI GAMES & CASUAL \u{1F3AE}",mode:"buttons",buttons:[{buttonId:`${p}slot`,buttonText:{displayText:"\u{1F3B0} PLAY SLOTS"}},{buttonId:`${p}quiz`,buttonText:{displayText:"\u{1F9E0} START QUIZ"}},{buttonId:`${p}leaderboard`,buttonText:{displayText:"\u{1F3C6} TOP RANKS"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="6"||cat==="info"||cat==="settings"||cat==="setting"||cat==="config"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u2699\uFE0F *BOT SETTINGS & SUPPORT* \u{1F4DE}
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F6E0}\uFE0F *SYSTEM & CONTACT INFORMATION*
-\u2502 \u27A3 *6.1* or *${p}ping* \u2014 Engine Latency Speed Test \u26A1
-\u2502 \u27A3 *6.2* or *${p}owner* \u2014 Bot Creator & Owner Contact \u{1F451}
-\u2502 \u27A3 *6.3* or *${p}channelreact on/off* \u2014 Channel Auto-Reaction \u26A1
-\u2502 \u27A3 *${p}autoreply on/off* \u2014 Smart Auto-Greetings \u{1F4AC}
-\u2502 \u27A3 *${p}botname <name>* \u2014 Rename Bot (Owner only) \u{1F3F7}\uFE0F
-\u2502 \u27A3 *${p}setprefix <prefix>* \u2014 Change Command Prefix \u{1F524}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4DE} *Support Hotline:* ${OWNER_HOTLINE}
-\u{1F4E2} *Official Channel:* ${WHATSAPP_CHANNEL_URL}
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u2699\uFE0F BOT SETTINGS & SUPPORT \u2699\uFE0F",mode:"buttons",buttons:[{buttonId:`${p}ping`,buttonText:{displayText:"\u26A1 PING SPEED"}},{buttonId:`${p}owner`,buttonText:{displayText:"\u{1F451} OWNER INFO"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="7"||cat==="daily"||cat==="finance"||cat==="gold"||cat==="rate"||cat==="rates"||cat==="bill"){const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F4CA} *DAILY & FINANCIAL UTILITIES* \u{1F4B0}
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-\u250C\u2500\u2500 \u{1F4C8} *AVAILABLE FINANCIAL & DAILY TOOLS*
-\u2502 \u27A3 *7.1* or *${p}gold* / *${p}rate* \u2014 Live Sri Lanka Gold Prices, Forex (USD/LKR) & Crypto \u{1FA99}
-\u2502 \u27A3 *7.2* or *${p}bill <amount> <people>* \u2014 AI Receipt & Bill Splitter \u{1F9FE}
-\u2502 \u27A3 *7.3* or *${p}remind <time> <msg>* \u2014 Scheduled WhatsApp Reminder Alert \u23F0
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (7.1, 7.2, 7.3) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1!*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}gold* | *${p}bill 12500 4* | *${p}remind 10m Take medicine*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F4CA} DAILY & FINANCIAL UTILITIES \u{1F4CA}",mode:"buttons",buttons:[{buttonId:`${p}gold`,buttonText:{displayText:"\u{1FA99} GOLD & RATES"}},{buttonId:`${p}menu business`,buttonText:{displayText:"\u{1F4BC} BUSINESS SUITE"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}if(cat==="8"||cat==="business"||cat==="shop"||cat==="store"||cat==="invoice"){const isBusinessPlan=this.state.config.plan==="business";const text=`
-\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
-   \u{1F4BC} *BUSINESS & E-COMMERCE SUITE* \u{1F6D2}
-   _(BUSINESS PLAN BOT EXCLUSIVE)_
-\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D
-
-${!isBusinessPlan?"\u26A0\uFE0F *NOTICE:* \u0DB8\u0DD9\u0DB8 \u0DB4\u0DC4\u0DC3\u0DD4\u0D9A\u0DB8\u0DCA \u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA\u0DCF\u0DAD\u0DCA\u0DB8\u0D9A \u0DC0\u0DB1\u0DCA\u0DB1\u0DDA BUSINESS Plan Bots \u0DC3\u0DB3\u0DC4\u0DCF \u0DB4\u0DB8\u0DAB\u0DD2!\n_Mini \u0DC4\u0DDD Pro Bots \u0DC3\u0DB3\u0DC4\u0DCF \u0DB8\u0DD9\u0DB8 \u0DB4\u0DC4\u0DC3\u0DD4\u0D9A\u0DB8\u0DCA \u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA\u0DCF\u0DAD\u0DCA\u0DB8\u0D9A \u0DB1\u0DDC\u0DC0\u0DDA._\n":"\u2705 *BUSINESS PLAN ACTIVE:* Your store engine is online!\n"}
-\u250C\u2500\u2500 \u{1F6CD}\uFE0F *AVAILABLE BUSINESS TOOLS*
-\u2502 \u27A3 *8.1* or *${p}shop* \u2014 WhatsApp Mini Online Catalog & Store \u{1F6D2}
-\u2502 \u27A3 *8.2* or *${p}invoice <name>, <item>, <price>* \u2014 Automated PDF Business Invoice Creator \u{1F9FE}
-\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA \u0DC4\u0DDD \u0D85\u0D82\u0D9A\u0DBA (8.1, 8.2) \u0D91\u0DC0\u0DB1\u0DCA\u0DB1!*
-_\u0D8B\u0DAF\u0DCF\u0DC4\u0DBB\u0DAB: *${p}shop* | *${p}invoice Nimal, Web Hosting, 4500*_
-
-\u{1F519} Main Menu \u0DC0\u0DD9\u0DAD \u0DBA\u0DCF\u0DB8\u0DA7 *0* \u0DC4\u0DDD *${p}menu* \u0D91\u0DC0\u0DB1\u0DCA\u0DB1.
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F4BC} BUSINESS & E-COMMERCE SUITE \u{1F4BC}",mode:"buttons",buttons:[{buttonId:`${p}shop`,buttonText:{displayText:"\u{1F6D2} MINI SHOP"}},{buttonId:`${p}menu daily`,buttonText:{displayText:"\u{1F4CA} DAILY & FINANCE"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]});return}const botName=this.state.config.botName;const masterMenuText=`
-\u{1F451} *${botName.toUpperCase()}* \u{1F451}
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-\u2728 *\u0DC3\u0DCF\u0DAF\u0DBB\u0DBA\u0DD9\u0DB1\u0DCA \u0DB4\u0DD2\u0DC5\u0DD2\u0D9C\u0DB1\u0DD2\u0DB8\u0DD4! / WELCOME!* \u2728
-
-\u0D94\u0DB6\u0DA7 \u0D85\u0DC0\u0DC1\u0DCA\u200D\u0DBA \u0D95\u0DB1\u0DD1\u0DB8 \u0DC3\u0DDA\u0DC0\u0DCF\u0DC0\u0D9A\u0DCA \u0DC4\u0DDD \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1\u0DBA\u0D9A\u0DCA \u0DBD\u0DB6\u0DCF \u0D9C\u0DD0\u0DB1\u0DD3\u0DB8\u0DA7,
-\u0DB4\u0DC4\u0DAD \u0DAF\u0DD0\u0D9A\u0DCA\u0DC0\u0DD9\u0DB1 \u0D85\u0DAF\u0DCF\u0DC5 *\u0D85\u0D82\u0D9A\u0DBA (1, 2, 3... 8)* Reply \u0D9A\u0DBB \u0D91\u0DC0\u0DB1\u0DCA\u0DB1. \u{1F60A}
-
-_Please reply with any category NUMBER (1, 2, 3... 8) below
-to explore commands, AI tools & direct downloaders._
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-
-\u256D\u2500\u276E \u{1F4CB} *SELECT A CATEGORY / \u0D9A\u0DCF\u0DAB\u0DCA\u0DA9\u0DBA\u0D9A\u0DCA \u0DAD\u0DDD\u0DBB\u0DB1\u0DCA\u0DB1* \u276F\u2500\u256E
-\u2502
-\u2502 1\uFE0F\u20E3 \u279C *DOWNLOADS (\u0DB6\u0DCF\u0D9C\u0DAD \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DCA)*
-\u2502     _MediaFire, Songs, Videos, TikTok, FB, IG, Twitter, APK_
-\u2502
-\u2502 2\uFE0F\u20E3 \u279C *MOVIES & SINHALA DUBS (\u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7 \u0DC3\u0DC4 \u0DC4\u0DAC\u0D9A\u0DD0\u0DC0\u0DD6)*
-\u2502     _Movie links, Sinhala dubbed films, Cinesubz, Subtitles_
-\u2502
-\u2502 3\uFE0F\u20E3 \u279C *AI VOICE & VISION (\u0D9A\u0DD8\u0DAD\u0DD2\u0DB8 \u0DB6\u0DD4\u0DAF\u0DCA\u0DB0\u0DD2\u0DBA \u0DC3\u0DC4 \u0DC4\u0DAC)*
-\u2502     _Voice translator, AI sticker, Video dub, Shazam, Math, Food_
-\u2502
-\u2502 4\uFE0F\u20E3 \u279C *GROUP TOOLS (\u0DC3\u0DB8\u0DD6\u0DC4 \u0DB4\u0DCF\u0DBD\u0DB1)*
-\u2502     _Kick, Add, Promote, Mute, Tagall, Antilink_
-\u2502
-\u2502 5\uFE0F\u20E3 \u279C *GAMES & FUN (\u0DC0\u0DD2\u0DB1\u0DDD\u0DAF\u0DCF\u0DAD\u0DCA\u0DB8\u0D9A \u0D9A\u0DCA\u200D\u0DBB\u0DD3\u0DA9\u0DCF)*
-\u2502     _Casino slots, Rank leaderboard, Trivia quiz, Dice roll_
-\u2502
-\u2502 6\uFE0F\u20E3 \u279C *BOT SETTINGS & SUPPORT (\u0DAD\u0DDC\u0DBB\u0DAD\u0DD4\u0DBB\u0DD4 \u0DC3\u0DC4 \u0DC3\u0DC4\u0DBA)*
-\u2502     _Bot speed, Latency ping, Channel, Owner contact_
-\u2502
-\u2502 7\uFE0F\u20E3 \u279C *DAILY & FINANCIAL (\u0D91\u0DAF\u0DD2\u0DB1\u0DD9\u0DAF\u0DCF & \u0DB8\u0DD6\u0DBD\u0DCA\u200D\u0DBA)*
-\u2502     _Live Gold rates, Forex (USD/LKR), Crypto, Bill splitter_
-\u2502
-\u2502 8\uFE0F\u20E3 \u279C *BUSINESS & E-COMMERCE [BUSINESS ONLY]*
-\u2502     _Mini shop catalog, Order system, Automated PDF invoices_
-\u2502
-\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256F
-
-\u{1F4A1} *\u0DB7\u0DCF\u0DC0\u0DD2\u0DAD\u0DCF \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0D85\u0DAF\u0DCF\u0DC5 \u0D85\u0D82\u0D9A\u0DBA (1 - 8) Reply \u0D9A\u0DBB\u0DB1\u0DCA\u0DB1!*
-_(Reply with 1, 2, 3, 4, 5, 6, 7, or 8 to open category)_
-
-\u26A1 *Official Channel:* ${WHATSAPP_CHANNEL_URL}
-\u{1F4DE} *Support Hotline:* ${OWNER_HOTLINE}
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-_POWERED BY YASHI HALLS_
-`.trim();const logoMedia = await this.getLogoBuffer();
-    if (this.sock) {
-      try {
-        await this.sock.sendMessage(
-          jid,
-          {
-            image: logoMedia,
-            caption: masterMenuText
-          },
-          { quoted: msg }
-        );
-        this.addLog("INFO", `✅ Delivered main menu WITH FAST CACHED LOGO to ${jid.split("@")[0]}`);
-        return;
-      } catch (err) {
-        this.addLog("WARN", `Fast logo menu delivery failed: ${err?.message || err}. Sending fallback text.`);
-      }
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "📥 DOWNLOAD SUITE",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}menu movie`, buttonText: { displayText: "🎬 MOVIES" } },
+          { buttonId: `${p}menu ai`, buttonText: { displayText: "🤖 AI SUITE" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
     }
+
+    // CATEGORY 2: MOVIES & CINEMA
+    if (cat === '2' || cat === 'movie' || cat === 'movies' || cat === 'film' || cat === 'films' || cat === 'filmdub' || cat === 'dub' || cat === 'sinhalasub' || cat === 'cinesubz') {
+      const text = `
+╭───「 *MOVIES & CINEMA* 」───╮
+│
+│ 🎬 *${p}film <name>*
+│    Search movies & direct download links
+│
+│ 🎙️ *${p}filmdub <name>*
+│    Sinhala dubbed movies, cartoons & series
+│
+│ 🍿 *${p}movie <name>*
+│    Movie details, cast, poster & IMDb rating
+│
+│ 🎥 *${p}cinesubz <name>*
+│    Cinesubz direct downloads & subtitles
+│
+│ 📝 *${p}sinhalasub <name>*
+│    Baiscope & Sinhala subtitles search
+│
+╰─────────────────────────────╯
+💡 *Usage:* Type *${p}film Avatar* or *${p}filmdub Kung Fu Panda*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "🎬 MOVIES & CINEMA",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}menu download`, buttonText: { displayText: "📥 DOWNLOADS" } },
+          { buttonId: `${p}menu ai`, buttonText: { displayText: "🤖 AI SUITE" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 3: AI & SMART SUITE
+    if (cat === '3' || cat === 'ai' || cat === 'gemini' || cat === 'voice' || cat === 'vision' || cat === 'tools') {
+      const text = `
+╭───「 *AI & SMART SUITE* 」───╮
+│
+│ 🤖 *${p}ai <prompt>*
+│    Ask anything with Google Gemini Flash AI
+│
+│ 🌐 *${p}translate <lang> <text>*
+│    Accurate multi-language translation
+│
+│ 📝 *${p}summarize <text/link>*
+│    Generate concise bullet-point summary
+│
+│ ✍️ *${p}write <topic>*
+│    Compose professional essays & letters
+│
+│ 💻 *${p}code <lang> <prompt>*
+│    Write, debug & explain code in 30+ languages
+│
+│ 🎨 *${p}imagine <prompt>*
+│    Generate photorealistic AI digital art
+│
+│ 🎙️ *${p}voicetrans <lang>* (reply to voice note)
+│    Translate spoken audio note to any language
+│
+│ 🎵 *${p}shazam* (reply to audio)
+│    Identify song title, artist & album
+│
+│ 🖼️ *${p}aisticker <prompt>*
+│    Create custom AI sticker instantly
+│
+│ 🧮 *${p}math <expression>*
+│    Step-by-step mathematical calculation
+│
+╰──────────────────────────────╯
+💡 *Usage:* Type *${p}ai Tell me a fun fact* or *${p}imagine Cyberpunk City*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "🤖 AI & SMART SUITE",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}menu download`, buttonText: { displayText: "📥 DOWNLOADS" } },
+          { buttonId: `${p}menu group`, buttonText: { displayText: "🛡️ GROUP TOOLS" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 4: GROUP MANAGEMENT
+    if (cat === '4' || cat === 'group' || cat === 'groups' || cat === 'admin' || cat === 'manage') {
+      const text = `
+╭───「 *GROUP MANAGEMENT* 」───╮
+│
+│ ℹ️ *${p}groupinfo*
+│    View group details, participants & permissions
+│
+│ 👑 *${p}admins*
+│    List all group administrators
+│
+│ 📢 *${p}tagall [message]*
+│    Mention every member in the group
+│
+│ 👻 *${p}hidetag [message]*
+│    Silent invisible broadcast mention [PRO]
+│
+│ 🚫 *${p}kick @user*
+│    Remove participant from group
+│
+│ ➕ *${p}add <phone number>*
+│    Add member to group
+│
+│ 🔒 *${p}mute* / *${p}unmute*
+│    Lock / unlock group messages for members
+│
+│ 🛡️ *${p}antilink <on/off>*
+│    Auto-delete link spam & kick offenders
+│
+│ ⚠️ *${p}warn @user* / *${p}warns* / *${p}resetwarn*
+│    Member warning system (3 warns = kick)
+│
+╰──────────────────────────────╯
+💡 *Usage:* Type *${p}tagall Urgent meeting now!*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "🛡️ GROUP MANAGEMENT",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}groupinfo`, buttonText: { displayText: "ℹ️ GROUP INFO" } },
+          { buttonId: `${p}admins`, buttonText: { displayText: "👑 ADMINS" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 5: GAMES & CASINO
+    if (cat === '5' || cat === 'game' || cat === 'games' || cat === 'fun' || cat === 'casino') {
+      const text = `
+╭───「 *GAMES & ENTERTAINMENT* 」───╮
+│
+│ 🧠 *${p}quiz*
+│    Answer trivia challenges to earn coins
+│
+│ 🎯 *${p}guess <1-10>*
+│    Guess the mystery secret number
+│
+│ 🎲 *${p}roll*
+│    Roll a 6-sided dice
+│
+│ 🪙 *${p}flip*
+│    Flip a coin (Heads or Tails)
+│
+│ 🎰 *${p}slot*
+│    Casino slot machine (Match 3 symbols to win)
+│
+│ 🏆 *${p}leaderboard*
+│    View top coin holders & rankings
+│
+╰──────────────────────────────────╯
+💡 *Usage:* Type *${p}quiz* or *${p}guess 7*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "🎮 GAMES & ENTERTAINMENT",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}quiz`, buttonText: { displayText: "🧠 PLAY QUIZ" } },
+          { buttonId: `${p}slot`, buttonText: { displayText: "🎰 PLAY SLOTS" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 6: BOT SETTINGS & TOGGLES
+    if (cat === '6' || cat === 'settings' || cat === 'setting' || cat === 'config' || cat === 'info' || cat === 'support') {
+      const text = `
+╭───「 *SETTINGS & CONFIGURATION* 」───╮
+│
+│ ⚡ *${p}ping*
+│    Test engine response speed & latency
+│
+│ ⚙️ *${p}settings*
+│    View full bot status, quotas & plan info
+│
+│ 🤖 *${p}autochat <on/off>*
+│    Toggle AI smart conversational auto-reply
+│
+│ 🎙️ *${p}voicereply <on/off>*
+│    Toggle voice note auto-replies
+│
+│ ❤️ *${p}channelreact <on/off>*
+│    Toggle automatic emoji reactions on channel posts
+│
+│ 👑 *${p}owner*
+│    Bot creator details & support hotline
+│
+╰──────────────────────────────────────╯
+💡 *Usage:* Type *${p}autochat off* or *${p}ping*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "⚙️ BOT SETTINGS",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}ping`, buttonText: { displayText: "⚡ CHECK PING" } },
+          { buttonId: `${p}owner`, buttonText: { displayText: "👑 OWNER INFO" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 7: DAILY & FINANCE
+    if (cat === '7' || cat === 'daily' || cat === 'finance' || cat === 'tools2') {
+      const text = `
+╭───「 *DAILY & FINANCE SUITE* 」───╮
+│
+│ 💰 *${p}gold*
+│    Live gold (24k/22k) & cryptocurrency rates
+│
+│ 🧾 *${p}bill <amount> <people>*
+│    Split restaurant or group bill with tax & tip
+│
+│ ⏰ *${p}remind <minutes> <reminder>*
+│    Set automatic timed reminder message
+│
+╰───────────────────────────────────╯
+💡 *Usage:* Type *${p}gold* or *${p}bill 4500 3*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "📊 DAILY & FINANCE",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}gold`, buttonText: { displayText: "💰 GOLD RATES" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // CATEGORY 8: BUSINESS & COMMERCE
+    if (cat === '8' || cat === 'business' || cat === 'shop' || cat === 'store') {
+      const text = `
+╭───「 *BUSINESS & COMMERCE* 」───╮
+│
+│ 🛍️ *${p}shop*
+│    Browse mini digital store & products
+│
+│ 🧾 *${p}invoice <amount> <client>*
+│    Generate professional digital invoice receipt
+│
+╰─────────────────────────────────╯
+💡 *Usage:* Type *${p}shop* or *${p}invoice 2500 John Doe*
+↩️ *Back to Menu:* Type *0* or *${p}menu*
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text,
+        title: "💼 BUSINESS & COMMERCE",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}shop`, buttonText: { displayText: "🛍️ OPEN SHOP" } },
+          { buttonId: `${p}menu`, buttonText: { displayText: "🏠 MAIN MENU" } }
+        ],
+        urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }]
+      });
+      return;
+    }
+
+    // DEFAULT: MASTER MAIN MENU (100% CLEAN, AESTHETIC ENGLISH)
+    const masterMenuText = `
+╭───「 *${botName.toUpperCase()}* 」───╮
+│ ⚡ *Version:* 2.4.0 • Enterprise Edition
+│ 💎 *Tier:* [${plan} ACTIVE]
+│ 👑 *Prefix:* "${p}"
+│ 🟢 *Status:* 24/7 Cloud Active (Always-On)
+│ 🚀 *Speed:* ${this.state.lastPingMs || 18}ms Ultra-Low Ping
+╰──────────────────────────────────────╯
+
+┌───「 *COMMAND DIRECTORY* 」
+│
+│ 📥 *1. DOWNLOADS*
+│    ${p}song • ${p}video • ${p}mediafire • ${p}tiktok
+│    ${p}fb • ${p}ig • ${p}twitter • ${p}apk
+│
+│ 🎬 *2. MOVIES & CINEMA*
+│    ${p}film • ${p}filmdub • ${p}movie
+│    ${p}cinesubz • ${p}sinhalasub
+│
+│ 🤖 *3. AI & SMART SUITE*
+│    ${p}ai • ${p}translate • ${p}summarize • ${p}write
+│    ${p}code • ${p}imagine • ${p}voicetrans • ${p}shazam
+│
+│ 🛡️ *4. GROUP MANAGEMENT*
+│    ${p}groupinfo • ${p}admins • ${p}tagall • ${p}hidetag
+│    ${p}kick • ${p}add • ${p}mute • ${p}antilink • ${p}warn
+│
+│ 🎮 *5. GAMES & CASINO*
+│    ${p}quiz • ${p}guess • ${p}roll • ${p}flip • ${p}slot
+│
+│ ⚙️ *6. SETTINGS & TOGGLES*
+│    ${p}ping • ${p}settings • ${p}autochat <on/off>
+│    ${p}voicereply <on/off> • ${p}owner
+│
+│ 📊 *7. DAILY & FINANCE*
+│    ${p}gold • ${p}bill • ${p}remind
+│
+│ 💼 *8. BUSINESS & COMMERCE*
+│    ${p}shop • ${p}invoice
+│
+└───「 *HOW TO USE* 」
+💡 Reply with any category number (*1* to *8*),
+   or type the command directly (e.g. *${p}song Faded*).
+`.trim();
 
     await this.sendInteractiveButtonsOrFallback(jid, msg, {
       text: masterMenuText,
-      title: `⚡ ${botName} MAIN MENU ⚡`,
+      title: `⚡ ${botName.toUpperCase()} • MAIN MENU ⚡`,
       mode: "buttons",
       buttons: [
-        { buttonId: `${p}menu download`, buttonText: { displayText: "📥 1. DOWNLOADS" } },
-        { buttonId: `${p}menu movie`, buttonText: { displayText: "🎬 2. MOVIES & DUBS" } },
-        { buttonId: `${p}menu ai`, buttonText: { displayText: "🤖 3. AI TOOLS" } }
+        { buttonId: `${p}menu download`, buttonText: { displayText: "📥 DOWNLOADS" } },
+        { buttonId: `${p}menu ai`, buttonText: { displayText: "🤖 AI SUITE" } },
+        { buttonId: `${p}menu settings`, buttonText: { displayText: "⚙️ SETTINGS" } }
       ],
-      urls: [{ displayText: "📢 WHATSAPP CHANNEL", url: WHATSAPP_CHANNEL_URL }],
-      calls: [{ displayText: "📞 SUPPORT HOTLINE", phoneNumber: OWNER_HOTLINE }]
-    });}async cmdSettings(jid,msg,isOwner,args){const p=this.state.config.prefix;const sender=msg.key?.participant||msg.key?.remoteJid||"";const senderPhone=sender.replace(/\D/g,"")||this.state.config.ownerNumber;const allCustomers=adminStore.getCustomers();const customer=allCustomers.find(c=>c.id&&c.id.includes(senderPhone)||c.username&&senderPhone.includes(c.username)||c.email&&c.email.includes(senderPhone))||allCustomers[0];const customerName=customer?.username||`Customer +${senderPhone.slice(-4)}`;const plan=(customer?.plan||this.state.config.plan).toUpperCase();const isPro=(customer?.plan||this.state.config.plan)==="pro";const isBusiness=(customer?.plan||this.state.config.plan)==="business";const isProOrBusiness=isPro||isBusiness;const walletCoins=typeof customer?.coins==="number"?customer.coins:15;const text=`
-\u2699\uFE0F *${this.state.config.botName} SYSTEM SETTINGS* \u2699\uFE0F
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-\u{1F916} *Bot Name:* ${this.state.config.botName}
-\u{1F464} *Customer:* ${customerName} | \u{1F4B0} *Wallet:* ${walletCoins} Coins
-\u{1F48E} *Current Tier:* [${plan} PLAN]
-\u{1F6E1}\uFE0F *Access Mode:* ${this.state.config.mode.toUpperCase()}
-\u{1F524} *Command Prefix:* "${p}"
-\u{1F4DE} *Owner Hotline:* ${OWNER_HOTLINE} (+${this.state.config.ownerNumber})
-\u26A1 *Official Channel:* ${WHATSAPP_CHANNEL_URL}
-\u{1F441}\uFE0F *Auto-Read Status:* ${this.state.config.autoReadStatus?"ENABLED \u2705":"DISABLED \u274C"}
-\u{1F6E1}\uFE0F *Anti-Link Defense:* ${isProOrBusiness?this.state.config.antiLink?"ENABLED \u2705":"DISABLED \u274C":"LOCKED [PRO/BIZ] \u{1F512}"}
-\u{1F6AB} *Anti-Spam Filter:* ${isProOrBusiness?this.state.config.antiSpam?"ENABLED \u2705":"DISABLED \u274C":"LOCKED [PRO/BIZ] \u{1F512}"}
-\u{1F44B} *Welcome Greetings:* ${isProOrBusiness?this.state.config.welcomeMessage?"ENABLED \u2705":"DISABLED \u274C":"LOCKED [PRO/BIZ] \u{1F512}"}
-\u{1F4CA} *Daily Quotas:*
- \u2022 Media Downloads: ${this.state.quotas.mediaRequestsUsed} / ${this.state.quotas.mediaQuotaMax}
- \u2022 YASHI HALLS AI Chat: ${this.state.quotas.aiRequestsUsed} / ${this.state.quotas.aiQuotaMax}
- \u2022 Bot Slots: ${this.state.quotas.maxBotSlots} Active
-\u26A1 *Latency Speed:* ${this.state.lastPingMs}ms
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-\u{1F4A1} *Quick Controls:*
-\u2022 *${p}ping* \u2014 Instant server response check
-\u2022 *${p}owner* \u2014 Contact bot administrator
-\u2022 *${p}public / ${p}private* \u2014 Change access mode (Owner only)
-${this.state.config.plan==="mini"?"\u2022 *Upgrade Plan:* 1-Click upgrade to PRO or BUSINESS in your Dashboard.":""}
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-_POWERED BY YASHI HALLS_
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u2699\uFE0F BOT SETTINGS & CONTROLS \u2699\uFE0F",mode:"buttons",buttons:[{buttonId:`${p}ping`,buttonText:{displayText:"\u26A1 CHECK PING"}},{buttonId:`${p}owner`,buttonText:{displayText:"\u{1F451} BOT OWNER"}},{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F519} MAIN MENU"}}],copyCodes:[{displayText:"\u{1F4CB} Copy .settings",copyCode:`${p}settings`}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}],calls:[{displayText:"\u{1F4DE} SUPPORT HOTLINE",phoneNumber:OWNER_HOTLINE}]})}async cmdHelp(jid,msg){const p=this.state.config.prefix;const isProOrBusiness=this.state.config.plan==="pro"||this.state.config.plan==="business";const text=`
-\u{1F4D6} *${this.state.config.botName} Guide*
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-\u2022 *${p}ping*: Instant latency test.
-\u2022 *${p}ai <prompt>*: Ask YASHI HALLS AI anything.
-\u2022 *${p}song <title>*: Fetch music track.
-\u2022 *${p}video <title>*: Fetch MP4 video clip.
-\u2022 *${p}img <query>*: Image search.
-\u2022 *${p}groupinfo*: View participant stats.
-\u2022 *${p}tagall [msg]*: Alert all group members.
-\u2022 *${p}guess <1-10>*: Number guessing game.
-\u2022 *${p}quiz*: Answer a trivia quiz.
-${isProOrBusiness?"\u2022 *Advanced Commands Active:* .play, .tiktok, .translate, .write, .code, .antilink, .warn, .hidetag":"\u2022 *Upgrade to PRO/BUSINESS:* Unlock unlimited downloads, AI assistants and group defense."}
+      copyCodes: [
+        { displayText: "📋 Copy .menu", copyCode: `${p}menu` },
+        { displayText: "⚡ Copy .ping", copyCode: `${p}ping` }
+      ],
+      urls: [
+        { displayText: "📢 OFFICIAL CHANNEL", url: WHATSAPP_CHANNEL_URL }
+      ],
+      calls: [
+        { displayText: "📞 SUPPORT HOTLINE", phoneNumber: OWNER_HOTLINE }
+      ]
+    });
+  }
 
-\u26A1 *Channel:* ${WHATSAPP_CHANNEL_URL}
-\u{1F4DE} *Support Hotline:* ${OWNER_HOTLINE}
-\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
-_POWERED BY YASHI HALLS_
-`.trim();await this.sendInteractiveButtonsOrFallback(jid,msg,{text,title:"\u{1F4D6} COMMAND DIRECTORY \u{1F4D6}",mode:"buttons",buttons:[{buttonId:`${p}menu`,buttonText:{displayText:"\u{1F4CB} OPEN MENU"}},{buttonId:`${p}ping`,buttonText:{displayText:"\u26A1 TEST LATENCY"}},{buttonId:`${p}owner`,buttonText:{displayText:"\u{1F451} BOT OWNER"}}],copyCodes:[{displayText:"\u{1F4CB} Copy .help",copyCode:`${p}help`}],urls:[{displayText:"\u{1F4E2} WHATSAPP CHANNEL",url:WHATSAPP_CHANNEL_URL}]})}async cmdPing(jid,msg){const latency=Math.max(12,Math.floor(Math.random()*20)+12);this.state.lastPingMs=latency;const p=this.state.config.prefix;const pingText=`
+  async cmdPing(jid,msg){const latency=Math.max(12,Math.floor(Math.random()*20)+12);this.state.lastPingMs=latency;const p=this.state.config.prefix;const pingText=`
 \u{1F3D3} *PONG!*
 \u26A1 *Speed:* ${latency}ms
 \u23F1\uFE0F *Uptime:* ${this.formatUptime()}
