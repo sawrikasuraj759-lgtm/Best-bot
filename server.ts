@@ -1,3 +1,20 @@
+// Runtime safeguard for whatsapp-rust-bridge package exports
+try {
+  const rustBridgePkg = 'node_modules/whatsapp-rust-bridge/package.json';
+  if (fs.existsSync(rustBridgePkg)) {
+    const raw = fs.readFileSync(rustBridgePkg, 'utf8');
+    if (!raw.includes('"main"')) {
+      const parsed = JSON.parse(raw);
+      parsed.main = './dist/index.js';
+      if (parsed.exports && parsed.exports['.']) {
+        parsed.exports['.'].default = './dist/index.js';
+        parsed.exports['.'].require = './dist/index.js';
+      }
+      fs.writeFileSync(rustBridgePkg, JSON.stringify(parsed, null, 2));
+    }
+  }
+} catch (e) {}
+
 import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
@@ -42,6 +59,19 @@ async function startServer() {
   // --- REST API ENDPOINTS ---
 
   // Health check endpoint
+  // 24/7 Cloud Keep-Alive Endpoint for UptimeRobot / Cron / Cloudflare Workers
+  app.get('/api/keepalive', (req: Request, res: Response) => {
+    res.json({
+      status: 'active',
+      keepAlivePulse: true,
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      botState: botEngine.state.connectionStatus,
+      isOnline: botEngine.state.isOnline,
+      message: '24/7 Always-On heartbeat acknowledged. Cloud Run container is kept awake!'
+    });
+  });
+
   app.get('/api/health', (req: Request, res: Response) => {
     const memory = process.memoryUsage();
     res.json({

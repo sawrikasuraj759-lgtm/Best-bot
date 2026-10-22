@@ -1,6 +1,10 @@
 import React from 'react';
 import { 
-  Bot, 
+  Bot,
+  ShieldCheck,
+  Activity,
+  Copy,
+  Check, 
   Terminal, 
   RefreshCw, 
   Clock, 
@@ -58,6 +62,18 @@ export const DashboardView: React.FC = () => {
   const maxSlots = isBusiness ? 25 : isPro ? 5 : 1;
   const latencyDisplay = isOnline ? `${serverBotState?.lastPingMs || 18} ms` : '—';
   const uptimeMinutes = Math.floor((serverBotState?.uptimeSeconds || 0) / 60);
+  const [copiedKeepAlive, setCopiedKeepAlive] = React.useState(false);
+  const [showKeepAliveGuide, setShowKeepAliveGuide] = React.useState(false);
+  const keepAliveUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/api/keepalive`
+    : 'https://ais-dev-hz54u4ecb2jgnndx3vltqa-722539631465.asia-southeast1.run.app/api/keepalive';
+
+  const handleCopyKeepAlive = () => {
+    soundFX.playClick();
+    navigator.clipboard.writeText(keepAliveUrl);
+    setCopiedKeepAlive(true);
+    setTimeout(() => setCopiedKeepAlive(false), 2500);
+  };
   const uptimeSeconds = (serverBotState?.uptimeSeconds || 0) % 60;
   const uptimeDisplay = isOnline ? `${uptimeMinutes}m ${uptimeSeconds}s` : 'Offline';
 

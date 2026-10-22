@@ -1,6 +1,6 @@
 import { pipeline } from "stream/promises";
 import { Readable } from "stream";
-var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,"name",{value,configurable:true});import makeWASocket,{DisconnectReason,useMultiFileAuthState,fetchLatestBaileysVersion,Browsers,makeCacheableSignalKeyStore,downloadMediaMessage}from"@whiskeysockets/baileys";import pino from"pino";import QRCode from"qrcode";import fs from"fs";import path from"path";import{askGemini,analyzeAudioWithGemini,analyzeVideoWithGemini,generateCVWithGemini,chatAsYashiHallsAI,ChatMemoryItem}from"./geminiService";import{resolveSongAudio,searchYoutubeVideo}from"./audioService";import{resolveSearchImage}from"./imageService";import{adminStore}from"./adminStore";import{getWhatsAppVoiceBuffer}from"./voiceService";import{normalizeWhatsAppNumber}from"../utils/phone";import{resolveMediaFire}from"./mediafireService";import{searchMovies,formatMovieCard}from"./movieService";const BRAND_LOGO_URL="https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png";const WHATSAPP_CHANNEL_URL="https://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z";const OWNER_HOTLINE="0740712934";class BotEngine{constructor(userId="default"){this.sock=null;this.logs=[];this.maxLogs=500;this.startTime=null;this.reconnectAttempts=0;this.maxReconnectAttempts=20;this.isExplicitlyStopped=true;this.reconnectTimer=null;this.activePairingPhone=null;this.groupWarnings=new Map;this.activeQuizSessions=new Map;this.processedCalls=new Set;this.isQrReady=false;this.voiceCooldownMap=new Map;this.chatMemory=new Map;this.start247Watchdog();this.chatAiCooldownMap=new Map;this.smartReplyCooldownMap=new Map;
+var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,"name",{value,configurable:true});import makeWASocket,{DisconnectReason,useMultiFileAuthState,fetchLatestBaileysVersion,Browsers,makeCacheableSignalKeyStore,downloadMediaMessage}from"@whiskeysockets/baileys";import pino from"pino";import QRCode from"qrcode";import fs from"fs";import path from"path";import{askGemini,analyzeAudioWithGemini,analyzeVideoWithGemini,generateCVWithGemini,chatAsYashiHallsAI,ChatMemoryItem}from"./geminiService";import{resolveSongAudio,searchYoutubeVideo}from"./audioService";import{resolveSearchImage}from"./imageService";import{adminStore}from"./adminStore";import{getWhatsAppVoiceBuffer}from"./voiceService";import{normalizeWhatsAppNumber}from"../utils/phone";import{resolveMediaFire}from"./mediafireService";import{searchMovies,formatMovieCard,searchFilmSets,formatFilmSetCard}from"./movieService";const BRAND_LOGO_URL="https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png";const WHATSAPP_CHANNEL_URL="https://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z";const OWNER_HOTLINE="0740712934";class BotEngine{constructor(userId="default"){this.sock=null;this.logs=[];this.maxLogs=500;this.startTime=null;this.reconnectAttempts=0;this.maxReconnectAttempts=20;this.isExplicitlyStopped=true;this.reconnectTimer=null;this.activePairingPhone=null;this.groupWarnings=new Map;this.activeQuizSessions=new Map;this.processedCalls=new Set;this.isQrReady=false;this.voiceCooldownMap=new Map;this.chatMemory=new Map;this.start247Watchdog();this.chatAiCooldownMap=new Map;this.smartReplyCooldownMap=new Map;
     this.cachedLogoBuffer=null;
     this.lastCachedLogoUrl='';
     try {
@@ -8,34 +8,76 @@ var __defProp=Object.defineProperty;var __name=(target,value)=>__defProp(target,
         this.cachedLogoBuffer = fs.readFileSync('/app/applet/data/bot_logo_opt.jpg');
         this.lastCachedLogoUrl = BRAND_LOGO_URL;
       }
-    } catch (e) {}this.smartReplyCooldownMap=new Map;this.state={connectionStatus:"disconnected",isOnline:false,pairedNumber:null,qrCodeDataUrl:null,pairingCode:null,uptimeSeconds:0,startedAt:null,lastPingMs:18,totalMessagesReceived:0,totalCommandsExecuted:0,totalAiQueries:0,activeGroupCount:0,incomingCallsCount:0,callsRejectedCount:0,autoRepliesSentCount:0,voiceAutoRepliesSentCount:0,recentCalls:[],config:{botName:"YASHI HALLS MINI",botLogoUrl:"https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png",prefix:".",mode:"public",ownerNumber:"94740712934",autoReadStatus:true,plan:"mini",antiLink:false,antiSpam:false,welcomeMessage:true,welcomeTemplate:"Welcome @user to @group! Enjoy your stay.",callDetectorEnabled:true,voiceAutoReplyEnabled:true,channelAutoReact:true,channelReactEmojis:"\u2764\uFE0F,\u{1F525},\u26A1,\u{1F44D},\u{1F31F},\u{1F389},\u{1F680},\u{1F60D},\u{1F44F},\u{1F4AF},\u{1F929}",smartAutoReply:true,customGreetingSinhala:"\u0DC4\u0DCF\u0DBA\u0DD2 @user! \u{1F44B} \u0DB8\u0DB8 @bot WhatsApp Bot. \u0D94\u0DB6\u0DA7 \u0D8B\u0DAF\u0DC0\u0DCA \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0DB8\u0DB8 \u0DC3\u0DD6\u0DAF\u0DCF\u0DB1\u0DB8\u0DCA! \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DB6\u0DD0\u0DBD\u0DD3\u0DB8\u0DA7 @prefixmenu \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1. \u{1F60A}",customGreetingEnglish:"Hello @user! \u{1F44B} I am @bot WhatsApp Bot. Type @prefixmenu to view all commands.",customAutoReplies:[{id:"rule-price",keyword:"\u0DB8\u0DD2\u0DBD",reply:"\u{1F4B0} *YASHI HALLS Bot \u0DB8\u0DD2\u0DBD \u0D9C\u0DAB\u0DB1\u0DCA:*\n\u2022 MINI Plan: \u0DB1\u0DDC\u0DB8\u0DD2\u0DBD\u0DDA (FREE / 150 Limit)\n\u2022 PRO Plan: 10 Coins\n\u2022 BUSINESS Plan: 30 Coins\nDashboard \u0D91\u0D9A\u0DD9\u0DB1\u0DCA \u0D9A\u0DCA\u0DC2\u0DAB\u0DD2\u0D9A\u0DC0 \u0DC3\u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA \u0D9A\u0DBB\u0D9C\u0DAD \u0DC4\u0DD0\u0D9A!"},{id:"rule-channel",keyword:"channel",reply:"\u{1F517} *YASHI HALLS Official Channel:*\nhttps://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z\n\u0DB1\u0DC0\u0DAD\u0DB8 Bot updates \u0DC3\u0DC4 features \u0DC3\u0DB3\u0DC4\u0DCF \u0D85\u0DAF\u0DB8 \u0D91\u0D9A\u0DAD\u0DD4 \u0DC0\u0DB1\u0DCA\u0DB1! \u{1F680}"}]},quotas:{mediaRequestsUsed:0,mediaQuotaMax:150,aiRequestsUsed:0,aiQuotaMax:150,maxBotSlots:1}};this.userId=userId;const safeId=userId.replace(/[^a-zA-Z0-9_-]/g,"_");this.sessionDir=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","whatsapp_session"):path.resolve(process.cwd(),"data","sessions",safeId,"whatsapp_session");this.configFile=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","bot_config.json"):path.resolve(process.cwd(),"data","sessions",safeId,"bot_config.json");this.addLog("INFO",`BotEngine initialized for user: ${userId} with Dual Plan support (MINI & PRO).`);this.loadSavedConfig();this.checkExistingSession()}static{__name(this,"BotEngine")}loadSavedConfig(){try{if(fs.existsSync(this.configFile)){const raw=fs.readFileSync(this.configFile,"utf-8");const parsed=JSON.parse(raw);this.state.config={...this.state.config,...parsed};this.addLog("INFO",`Loaded persisted bot settings: AutoReply=${this.state.config.smartAutoReply?"ON":"OFF"}, ChannelReact=${this.state.config.channelAutoReact?"ON":"OFF"}`)}}catch{}}saveConfigToFile(){try{fs.mkdirSync(path.dirname(this.configFile),{recursive:true});fs.writeFileSync(this.configFile,JSON.stringify(this.state.config,null,2))}catch{}}addLog(level,message){const timestamp=new Date().toLocaleTimeString("en-US",{hour12:false});const log={id:`${Date.now()}-${Math.random().toString(36).substr(2,5)}`,timestamp,level,message};this.logs.push(log);if(this.logs.length>this.maxLogs){this.logs.shift()}}checkExistingSession(){try{if(fs.existsSync(this.sessionDir)){const files=fs.readdirSync(this.sessionDir);if(files.some(f=>f.includes("creds.json"))){this.addLog("INFO","Existing WhatsApp session credentials found in persistent storage.")}}else{fs.mkdirSync(this.sessionDir,{recursive:true})}}catch{}}getState(){const uptimeSeconds=this.startTime?Math.floor((Date.now()-this.startTime)/1e3):0;return{...this.state,uptimeSeconds}}getLogs(){return[...this.logs]}setPlan(plan){this.state.config.plan=plan;if(plan==="business"){this.state.config.botName="YASHI HALLS BUSINESS";this.state.quotas.mediaQuotaMax=999999;this.state.quotas.aiQuotaMax=999999;this.state.quotas.maxBotSlots=25;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F451} Tier upgraded to YASHI HALLS BUSINESS! 25 Bot Slots, Unlimited Media & AI, and VIP Enterprise SLA activated.")}else if(plan==="pro"){this.state.config.botName="YASHI HALLS PRO";this.state.quotas.mediaQuotaMax=1e3;this.state.quotas.aiQuotaMax=5e3;this.state.quotas.maxBotSlots=5;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F48E} Tier upgraded to YASHI HALLS PRO! All advanced features, multi-slots & unlimited quotas unlocked.")}else{this.state.config.botName="YASHI HALLS MINI";this.state.quotas.mediaQuotaMax=150;this.state.quotas.aiQuotaMax=150;this.state.quotas.maxBotSlots=1;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F7E2} Tier switched to YASHI HALLS MINI. Quotas set to 150 Daily Requests with all Pro & Business features unlocked!")}return this.getState()}async syncProfilePictureWithLogo(customLogoUrl){if(!this.sock||!this.state.isOnline){return{success:false,message:"WhatsApp bot must be online to update profile picture."}}const targetUrl=customLogoUrl||this.state.config.botLogoUrl||BRAND_LOGO_URL;try{const userJid=this.sock.user?.id;if(!userJid){return{success:false,message:"User JID not available."}}if(typeof this.sock.updateProfilePicture==="function"){await this.sock.updateProfilePicture(userJid,{url:targetUrl});if(customLogoUrl){this.state.config.botLogoUrl=customLogoUrl;this.saveConfigToFile()}this.addLog("INFO",`\u2705 Bot profile picture successfully updated to: ${targetUrl}`);return{success:true,message:"Bot profile picture updated successfully!"}}return{success:false,message:"Profile picture update not supported by current client session."}}catch(err){this.addLog("WARN",`Profile picture update attempt failed: ${err?.message}`);return{success:false,message:err?.message||"Failed to update profile picture"}}}updateConfig(newConfig){const customBotName=newConfig.botName;if(newConfig.plan){this.setPlan(newConfig.plan)}this.state.config={...this.state.config,...newConfig,...customBotName?{botName:customBotName}:{}};this.saveConfigToFile();this.addLog("INFO",`Configuration updated: Plan=${this.state.config.plan.toUpperCase()}, BotName="${this.state.config.botName}", Prefix="${this.state.config.prefix}", Logo="${this.state.config.botLogoUrl||"default"}"`);return this.state.config}resetQuotas(){this.state.quotas.mediaRequestsUsed=0;this.state.quotas.aiRequestsUsed=0;this.addLog("INFO","Daily quotas reset to 0.");return this.state.quotas}start247Watchdog(){if(this.watchdogTimer)clearInterval(this.watchdogTimer);this.watchdogTimer=setInterval(async()=>{try{if(this.isExplicitlyStopped)return;const hasCreds=this.hasExistingSession();if(hasCreds&&!this.state.isOnline&&this.state.connectionStatus!=='reconnecting'){this.addLog('WARN','[24/7 Watchdog] Bot registered but disconnected. Auto-triggering instant reconnection...');this.start().catch(()=>{})}else if(this.state.isOnline&&this.sock?.user?.id){await this.sock.sendPresenceUpdate('available').catch(()=>{})}}catch(err){}},25000)}async start(requestedPhone){this.isExplicitlyStopped=false;this.reconnectAttempts=0;if(this.state.connectionStatus==="connected"&&this.sock){return{success:true,message:"Bot is already connected and online."}}if(requestedPhone){const cleanPhone=normalizeWhatsAppNumber(requestedPhone);if(cleanPhone)this.activePairingPhone=cleanPhone}if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}if(this.sock){try{this.sock.ev.removeAllListeners("connection.update");this.sock.ev.removeAllListeners("creds.update");this.sock.ev.removeAllListeners("messages.upsert");this.sock.ev.removeAllListeners("call");this.sock.ev.removeAllListeners("group-participants.update");try{this.sock.ws?.close()}catch(e){}try{this.sock.end(void 0)}catch(e){}}catch(err){}this.sock=null}try{this.state.connectionStatus="connecting";this.addLog("INFO",`Starting ${this.state.config.botName} WhatsApp Baileys connection...`);if(!fs.existsSync(this.sessionDir)){fs.mkdirSync(this.sessionDir,{recursive:true})}const{state:authState,saveCreds}=await useMultiFileAuthState(this.sessionDir);await saveCreds();const{version}=await fetchLatestBaileysVersion();this.addLog("INFO",`Using Baileys protocol v${version.join(".")}`);const logger=pino({level:"silent"});this.sock=makeWASocket({version,logger,printQRInTerminal:false,auth:{creds:authState.creds,keys:makeCacheableSignalKeyStore(authState.keys,logger)},browser:Browsers.ubuntu("Chrome"),syncFullHistory:false,markOnlineOnConnect:false,connectTimeoutMs:12e4,defaultQueryTimeoutMs:12e4,keepAliveIntervalMs:25e3,generateHighQualityLinkPreview:true,getMessage:__name(async()=>void 0,"getMessage")});this.sock.ev.on("creds.update",saveCreds);this.sock.ev.on("connection.update",async update=>{const{connection,lastDisconnect,qr}=update;if(qr){if(!this.activePairingPhone&&!this.state.pairingCode){this.isQrReady=true;this.state.connectionStatus="qr_ready";try{const dataUrl=await QRCode.toDataURL(qr,{margin:2,scale:7});this.state.qrCodeDataUrl=dataUrl;this.addLog("INFO","QR code generated and ready for WhatsApp scan.")}catch(err){this.addLog("ERROR","Failed to generate QR Code data URL.")}}}if(connection==="close"){this.isQrReady=false;if(this.isExplicitlyStopped){this.state.isOnline=false;this.state.connectionStatus="disconnected";this.startTime=null;return}const statusCode=lastDisconnect?.error?.output?.statusCode;const errorMsg=String(lastDisconnect?.error?.message||lastDisconnect?.error||"");const isRestartRequired=statusCode===DisconnectReason.restartRequired;const isBadSession=statusCode===DisconnectReason.loggedOut||statusCode===401||statusCode===403||errorMsg.includes("Bad MAC")||errorMsg.includes("Failed to decrypt");const shouldReconnect=!isBadSession&&statusCode!==DisconnectReason.loggedOut&&!this.isExplicitlyStopped;this.state.isOnline=false;this.state.connectionStatus=shouldReconnect?"reconnecting":"disconnected";this.startTime=null;this.addLog("WARN",`Connection closed. Reason: ${DisconnectReason[statusCode]||statusCode||errorMsg||"Unknown"}. Reconnect=${shouldReconnect}`);if(isBadSession){this.addLog("WARN","Corrupted or expired session credentials detected (Bad MAC/401). Clearing stored session files.");this.clearSessionFiles();this.state.pairedNumber=null;this.state.connectionStatus="disconnected";if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}return}else if(shouldReconnect){if(isRestartRequired){this.addLog("INFO","WhatsApp stream restart requested (handshake/pairing update). Reconnecting in 500ms...");if(this.reconnectTimer)clearTimeout(this.reconnectTimer);this.reconnectTimer=setTimeout(()=>{this.reconnectTimer=null;if(!this.isExplicitlyStopped){this.start(this.activePairingPhone||requestedPhone)}},500)}else{const isUnregistered = !this.sock?.authState?.creds?.registered;
-        if (!isUnregistered && !this.isExplicitlyStopped) {
-          // 24/7 Always-On Infinite Recovery for registered bots
-          this.reconnectAttempts++;
-          const delayMs = Math.min(2000 + (this.reconnectAttempts * 1000), 10000);
-          this.addLog("INFO", `[24/7 Keep-Alive] Auto-reconnecting attempt #${this.reconnectAttempts} in ${(delayMs/1000).toFixed(1)}s (Non-stop mode)...`);
-          if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-          this.reconnectTimer = setTimeout(() => {
-            this.reconnectTimer = null;
-            if (!this.isExplicitlyStopped) {
-              this.start(this.activePairingPhone || requestedPhone);
-            }
-          }, delayMs);
-        } else if (this.reconnectAttempts < 5) {
-          this.reconnectAttempts++;
-          this.addLog("INFO", `Pairing handshake retry ${this.reconnectAttempts}/5 in 2.5s...`);
-          if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
-          this.reconnectTimer = setTimeout(() => {
-            this.reconnectTimer = null;
-            if (!this.isExplicitlyStopped) {
-              this.start(this.activePairingPhone || requestedPhone);
-            }
-          }, 2500);
-        } else {
-          this.addLog("ERROR", "Initial pairing code timeout. Bot standby.");
-          this.state.connectionStatus = "disconnected";
+    } catch (e) {}this.smartReplyCooldownMap=new Map;this.state={connectionStatus:"disconnected",isOnline:false,pairedNumber:null,qrCodeDataUrl:null,pairingCode:null,uptimeSeconds:0,startedAt:null,lastPingMs:18,totalMessagesReceived:0,totalCommandsExecuted:0,totalAiQueries:0,activeGroupCount:0,incomingCallsCount:0,callsRejectedCount:0,autoRepliesSentCount:0,voiceAutoRepliesSentCount:0,recentCalls:[],config:{botName:"YASHI HALLS MINI",botLogoUrl:"https://i.ibb.co/cXC7c42J/file-000000007c3c8210ae1b96d28b22c655.png",prefix:".",mode:"public",ownerNumber:"94740712934",autoReadStatus:true,plan:"mini",antiLink:false,antiSpam:false,welcomeMessage:true,welcomeTemplate:"Welcome @user to @group! Enjoy your stay.",callDetectorEnabled:true,voiceAutoReplyEnabled:true,channelAutoReact:true,channelReactEmojis:"\u2764\uFE0F,\u{1F525},\u26A1,\u{1F44D},\u{1F31F},\u{1F389},\u{1F680},\u{1F60D},\u{1F44F},\u{1F4AF},\u{1F929}",smartAutoReply:true,customGreetingSinhala:"\u0DC4\u0DCF\u0DBA\u0DD2 @user! \u{1F44B} \u0DB8\u0DB8 @bot WhatsApp Bot. \u0D94\u0DB6\u0DA7 \u0D8B\u0DAF\u0DC0\u0DCA \u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DA7 \u0DB8\u0DB8 \u0DC3\u0DD6\u0DAF\u0DCF\u0DB1\u0DB8\u0DCA! \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DB6\u0DD0\u0DBD\u0DD3\u0DB8\u0DA7 @prefixmenu \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1. \u{1F60A}",customGreetingEnglish:"Hello @user! \u{1F44B} I am @bot WhatsApp Bot. Type @prefixmenu to view all commands.",customAutoReplies:[{id:"rule-price",keyword:"\u0DB8\u0DD2\u0DBD",reply:"\u{1F4B0} *YASHI HALLS Bot \u0DB8\u0DD2\u0DBD \u0D9C\u0DAB\u0DB1\u0DCA:*\n\u2022 MINI Plan: \u0DB1\u0DDC\u0DB8\u0DD2\u0DBD\u0DDA (FREE / 150 Limit)\n\u2022 PRO Plan: 10 Coins\n\u2022 BUSINESS Plan: 30 Coins\nDashboard \u0D91\u0D9A\u0DD9\u0DB1\u0DCA \u0D9A\u0DCA\u0DC2\u0DAB\u0DD2\u0D9A\u0DC0 \u0DC3\u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA \u0D9A\u0DBB\u0D9C\u0DAD \u0DC4\u0DD0\u0D9A!"},{id:"rule-channel",keyword:"channel",reply:"\u{1F517} *YASHI HALLS Official Channel:*\nhttps://whatsapp.com/channel/0029Vb927N4GJP8MS1yurM2Z\n\u0DB1\u0DC0\u0DAD\u0DB8 Bot updates \u0DC3\u0DC4 features \u0DC3\u0DB3\u0DC4\u0DCF \u0D85\u0DAF\u0DB8 \u0D91\u0D9A\u0DAD\u0DD4 \u0DC0\u0DB1\u0DCA\u0DB1! \u{1F680}"}]},quotas:{mediaRequestsUsed:0,mediaQuotaMax:150,aiRequestsUsed:0,aiQuotaMax:150,maxBotSlots:1}};this.userId=userId;const safeId=userId.replace(/[^a-zA-Z0-9_-]/g,"_");this.sessionDir=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","whatsapp_session"):path.resolve(process.cwd(),"data","sessions",safeId,"whatsapp_session");this.configFile=safeId==="default"||!safeId?path.resolve(process.cwd(),"data","bot_config.json"):path.resolve(process.cwd(),"data","sessions",safeId,"bot_config.json");this.addLog("INFO",`BotEngine initialized for user: ${userId} with Dual Plan support (MINI & PRO).`);this.loadSavedConfig();this.checkExistingSession()}static{__name(this,"BotEngine")}loadSavedConfig(){try{if(fs.existsSync(this.configFile)){const raw=fs.readFileSync(this.configFile,"utf-8");const parsed=JSON.parse(raw);this.state.config={...this.state.config,...parsed};this.addLog("INFO",`Loaded persisted bot settings: AutoReply=${this.state.config.smartAutoReply?"ON":"OFF"}, ChannelReact=${this.state.config.channelAutoReact?"ON":"OFF"}`)}}catch{}}saveConfigToFile(){try{fs.mkdirSync(path.dirname(this.configFile),{recursive:true});fs.writeFileSync(this.configFile,JSON.stringify(this.state.config,null,2))}catch{}}addLog(level,message){const timestamp=new Date().toLocaleTimeString("en-US",{hour12:false});const log={id:`${Date.now()}-${Math.random().toString(36).substr(2,5)}`,timestamp,level,message};this.logs.push(log);if(this.logs.length>this.maxLogs){this.logs.shift()}}checkExistingSession(){try{if(fs.existsSync(this.sessionDir)){const files=fs.readdirSync(this.sessionDir);if(files.some(f=>f.includes("creds.json"))){this.addLog("INFO","Existing WhatsApp session credentials found in persistent storage.")}}else{fs.mkdirSync(this.sessionDir,{recursive:true})}}catch{}}getState(){const uptimeSeconds=this.startTime?Math.floor((Date.now()-this.startTime)/1e3):0;return{...this.state,uptimeSeconds}}getLogs(){return[...this.logs]}setPlan(plan){this.state.config.plan=plan;if(plan==="business"){this.state.config.botName="YASHI HALLS BUSINESS";this.state.quotas.mediaQuotaMax=999999;this.state.quotas.aiQuotaMax=999999;this.state.quotas.maxBotSlots=25;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F451} Tier upgraded to YASHI HALLS BUSINESS! 25 Bot Slots, Unlimited Media & AI, and VIP Enterprise SLA activated.")}else if(plan==="pro"){this.state.config.botName="YASHI HALLS PRO";this.state.quotas.mediaQuotaMax=1e3;this.state.quotas.aiQuotaMax=5e3;this.state.quotas.maxBotSlots=5;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F48E} Tier upgraded to YASHI HALLS PRO! All advanced features, multi-slots & unlimited quotas unlocked.")}else{this.state.config.botName="YASHI HALLS MINI";this.state.quotas.mediaQuotaMax=150;this.state.quotas.aiQuotaMax=150;this.state.quotas.maxBotSlots=1;this.state.config.antiLink=true;this.state.config.antiSpam=true;this.addLog("INFO","\u{1F7E2} Tier switched to YASHI HALLS MINI. Quotas set to 150 Daily Requests with all Pro & Business features unlocked!")}return this.getState()}async syncProfilePictureWithLogo(customLogoUrl){if(!this.sock||!this.state.isOnline){return{success:false,message:"WhatsApp bot must be online to update profile picture."}}const targetUrl=customLogoUrl||this.state.config.botLogoUrl||BRAND_LOGO_URL;try{const userJid=this.sock.user?.id;if(!userJid){return{success:false,message:"User JID not available."}}if(typeof this.sock.updateProfilePicture==="function"){await this.sock.updateProfilePicture(userJid,{url:targetUrl});if(customLogoUrl){this.state.config.botLogoUrl=customLogoUrl;this.saveConfigToFile()}this.addLog("INFO",`\u2705 Bot profile picture successfully updated to: ${targetUrl}`);return{success:true,message:"Bot profile picture updated successfully!"}}return{success:false,message:"Profile picture update not supported by current client session."}}catch(err){this.addLog("WARN",`Profile picture update attempt failed: ${err?.message}`);return{success:false,message:err?.message||"Failed to update profile picture"}}}updateConfig(newConfig){const customBotName=newConfig.botName;if(newConfig.plan){this.setPlan(newConfig.plan)}this.state.config={...this.state.config,...newConfig,...customBotName?{botName:customBotName}:{}};this.saveConfigToFile();this.addLog("INFO",`Configuration updated: Plan=${this.state.config.plan.toUpperCase()}, BotName="${this.state.config.botName}", Prefix="${this.state.config.prefix}", Logo="${this.state.config.botLogoUrl||"default"}"`);return this.state.config}resetQuotas(){this.state.quotas.mediaRequestsUsed=0;this.state.quotas.aiRequestsUsed=0;this.addLog("INFO","Daily quotas reset to 0.");return this.state.quotas}start247Watchdog() {
+    if (this.watchdogTimer) clearInterval(this.watchdogTimer);
+    this.watchdogTimer = setInterval(async () => {
+      try {
+        if (this.isExplicitlyStopped) return;
+        const hasCreds = this.hasExistingSession();
+
+        // If registered session exists on disk but connection is down, heal immediately
+        if (hasCreds && !this.state.isOnline && !this.reconnectTimer) {
+          this.addLog("WARN", "[24/7 Self-Healing Watchdog] Session detected offline. Auto-triggering instant reconnection...");
+          this.start(this.activePairingPhone).catch(() => {});
+        } else if (this.state.isOnline && this.sock?.user?.id) {
+          // Send live presence ping to keep WhatsApp Web server session alive
+          await this.sock.sendPresenceUpdate('available').catch(() => {});
         }
-      }}}else if(connection==="open"){this.reconnectAttempts=0;this.activePairingPhone=null;this.state.isOnline=true;this.state.connectionStatus="connected";this.state.qrCodeDataUrl=null;this.state.pairingCode=null;this.startTime=Date.now();this.state.startedAt=new Date().toISOString();const userJid=this.sock?.user?.id||"";const phoneNum=userJid.split(":")[0]||userJid.split("@")[0]||"Unknown";this.state.pairedNumber=phoneNum;this.addLog("INFO",`\u2705 Connection established! ${this.state.config.botName} (${this.state.config.plan.toUpperCase()}) is now ONLINE for +${phoneNum}`);this.addLog("INFO",`Ready to respond to commands with prefix '${this.state.config.prefix}'.`);try{const targetJid=userJid.includes(":")?`${userJid.split(":")[0]}@s.whatsapp.net`:userJid.includes("@")?userJid:`${userJid}@s.whatsapp.net`;if(targetJid&&this.sock){const logoUrl = this.state.config.botLogoUrl || BRAND_LOGO_URL;
+      } catch (err) {}
+    }, 12000);
+  }async start(requestedPhone){this.isExplicitlyStopped=false;this.reconnectAttempts=0;if(this.state.connectionStatus==="connected"&&this.sock){return{success:true,message:"Bot is already connected and online."}}if(requestedPhone){const cleanPhone=normalizeWhatsAppNumber(requestedPhone);if(cleanPhone)this.activePairingPhone=cleanPhone}if(this.reconnectTimer){clearTimeout(this.reconnectTimer);this.reconnectTimer=null}if(this.sock){try{this.sock.ev.removeAllListeners("connection.update");this.sock.ev.removeAllListeners("creds.update");this.sock.ev.removeAllListeners("messages.upsert");this.sock.ev.removeAllListeners("call");this.sock.ev.removeAllListeners("group-participants.update");try{this.sock.ws?.close()}catch(e){}try{this.sock.end(void 0)}catch(e){}}catch(err){}this.sock=null}try{this.state.connectionStatus="connecting";this.addLog("INFO",`Starting ${this.state.config.botName} WhatsApp Baileys connection...`);if(!fs.existsSync(this.sessionDir)){fs.mkdirSync(this.sessionDir,{recursive:true})}const{state:authState,saveCreds}=await useMultiFileAuthState(this.sessionDir);await saveCreds();const{version}=await fetchLatestBaileysVersion();this.addLog("INFO",`Using Baileys protocol v${version.join(".")}`);const logger=pino({level:"silent"});this.sock=makeWASocket({version,logger,printQRInTerminal:false,auth:{creds:authState.creds,keys:makeCacheableSignalKeyStore(authState.keys,logger)},browser:Browsers.ubuntu("Chrome"),syncFullHistory:false,markOnlineOnConnect:true,connectTimeoutMs:12e4,defaultQueryTimeoutMs:12e4,keepAliveIntervalMs:10000,connectTimeoutMs:60000,defaultQueryTimeoutMs:60000,retryRequestDelayMs:250,maxMsgRetryCount:5,markOnlineOnConnect:true,generateHighQualityLinkPreview:true,getMessage:__name(async()=>void 0,"getMessage")});this.sock.ev.on("creds.update",saveCreds);this.sock.ev.on("connection.update",async update=>{const{connection,lastDisconnect,qr}=update;if(qr){if(!this.activePairingPhone&&!this.state.pairingCode){this.isQrReady=true;this.state.connectionStatus="qr_ready";try{const dataUrl=await QRCode.toDataURL(qr,{margin:2,scale:7});this.state.qrCodeDataUrl=dataUrl;this.addLog("INFO","QR code generated and ready for WhatsApp scan.")}catch(err){this.addLog("ERROR","Failed to generate QR Code data URL.")}}}if (connection === "close") {
+      this.isQrReady = false;
+      if (this.isExplicitlyStopped) {
+        this.state.isOnline = false;
+        this.state.connectionStatus = "disconnected";
+        this.startTime = null;
+        return;
+      }
+
+      const statusCode = lastDisconnect?.error?.output?.statusCode;
+      const errorMsg = String(lastDisconnect?.error?.message || lastDisconnect?.error || "");
+      const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+      const isRestartRequired = statusCode === DisconnectReason.restartRequired || statusCode === 515;
+
+      this.state.isOnline = false;
+      this.startTime = null;
+
+      this.addLog("WARN", `Connection dropped: ${DisconnectReason[statusCode] || statusCode || errorMsg || "Stream Closed"}. Reconnecting...`);
+
+      if (isLoggedOut) {
+        // True manual unlink from WhatsApp mobile app
+        this.addLog("WARN", "WhatsApp session unlinked from mobile device. Please pair again via Dashboard.");
+        this.state.connectionStatus = "disconnected";
+        this.state.pairedNumber = null;
+        return;
+      }
+
+      // 24/7 NON-STOP ALWAYS-ON RECOVERY: NEVER wipe session on Bad MAC/401/403/Stream reset!
+      this.state.connectionStatus = "reconnecting";
+
+      if (isRestartRequired) {
+        this.addLog("INFO", "WhatsApp stream restart signal received (515). Instant fast-reconnect in 400ms...");
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = null;
+          if (!this.isExplicitlyStopped) {
+            this.start(this.activePairingPhone || requestedPhone);
+          }
+        }, 400);
+      } else {
+        this.reconnectAttempts++;
+        const delayMs = Math.min(1000 + (this.reconnectAttempts * 600), 6000);
+        this.addLog("INFO", `[24/7 Auto-Reconnect] Reconnecting in ${(delayMs/1000).toFixed(1)}s (Attempt #${this.reconnectAttempts})...`);
+        
+        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = null;
+          if (!this.isExplicitlyStopped) {
+            this.start(this.activePairingPhone || requestedPhone);
+          }
+        }, delayMs);
+      }
+    } else if(connection==="open"){this.reconnectAttempts=0;this.activePairingPhone=null;this.state.isOnline=true;this.state.connectionStatus="connected";this.state.qrCodeDataUrl=null;this.state.pairingCode=null;this.startTime=Date.now();this.state.startedAt=new Date().toISOString();const userJid=this.sock?.user?.id||"";const phoneNum=userJid.split(":")[0]||userJid.split("@")[0]||"Unknown";this.state.pairedNumber=phoneNum;this.addLog("INFO",`\u2705 Connection established! ${this.state.config.botName} (${this.state.config.plan.toUpperCase()}) is now ONLINE for +${phoneNum}`);this.addLog("INFO",`Ready to respond to commands with prefix '${this.state.config.prefix}'.`);try{const targetJid=userJid.includes(":")?`${userJid.split(":")[0]}@s.whatsapp.net`:userJid.includes("@")?userJid:`${userJid}@s.whatsapp.net`;if(targetJid&&this.sock){const logoUrl = this.state.config.botLogoUrl || BRAND_LOGO_URL;
         // Update WhatsApp profile display name to YASHI HALLS
         try {
           if (typeof this.sock.updateProfileName === "function") {
@@ -421,7 +463,7 @@ _I'm doing fantastic, thank you! How are you doing? Type *${prefix}menu* for ass
 \u{1F4AC} *Auto-Reply System:* ${prefix}autoreply on/off
 
 \u0DC3\u0DD2\u0DBA\u0DBD\u0DD4\u0DB8 \u0DC0\u0DD2\u0DB0\u0DCF\u0DB1 \u0DC3\u0DB3\u0DC4\u0DCF *${prefix}menu* \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1! \u{1F60A}`}else if(/^(bot|බොට්|yashi|යශී)[\s!?.]*$/i.test(lowerText)){smartResponse=`\u0D94\u0DC0\u0DCA @${senderNumber}! \u0DB8\u0DB8 \u0DC3\u0D9A\u0DCA\u200D\u0DBB\u0DD2\u0DBA\u0DC0 (Online \u{1F7E2}) \u0D89\u0DB1\u0DCA\u0DB1\u0DDA. \u0D94\u0DB6\u0DA7 \u0DB8\u0D9C\u0DD9\u0DB1\u0DCA \u0DC0\u0DD2\u0DBA \u0DBA\u0DD4\u0DAD\u0DD4 \u0DAF\u0DDA \u0DB6\u0DD0\u0DBD\u0DD3\u0DB8\u0DA7 *${prefix}menu* \u0DBD\u0DD9\u0DC3 \u0D91\u0DC0\u0DB1\u0DCA\u0DB1! \u{1F60A}`}if(smartResponse){this.smartReplyCooldownMap.set(cooldownKey,now);this.state.autoRepliesSentCount++;this.addLog("INFO",`\u{1F4AC} [SMART AUTO-REPLY] Auto-replied to "${text}" from ${senderNumber}`);await this.sock.sendMessage(jid,{text:smartResponse,mentions:[sender]},{quoted:msg});return}}}if(!text.startsWith(prefix))return;const[cmdWithPrefix,...argsList]=text.split(/\s+/);const command=cmdWithPrefix.slice(prefix.length).toLowerCase();const args=argsList.join(" ");this.state.totalCommandsExecuted++;this.addLog("CMD",`Command '${prefix}${command}' from ${sender.split("@")[0]} (${this.state.config.plan.toUpperCase()}) in ${isGroup?"Group":"DM"}`);const isOwner=sender.includes(this.state.config.ownerNumber.replace(/\D/g,""));if(this.state.config.mode==="private"&&!isOwner){await this.reply(jid,msg,`\u{1F512} *${this.state.config.botName} is in PRIVATE mode.*
-Only the bot owner (+${this.state.config.ownerNumber}) can execute commands.`);return}try{switch(command){case"menu":case"start":await this.cmdMenu(jid,msg,args);break;case"settings":case"setting":case"config":await this.cmdSettings(jid,msg,isOwner,args);break;case"upgrade":case"pro":await this.sendProRequiredReply(jid,msg,"upgrade");break;case"games":case"game":await this.cmdMenu(jid,msg,"games");break;case"help":await this.cmdHelp(jid,msg);break;case"ping":await this.cmdPing(jid,msg);break;case"owner":await this.cmdOwner(jid,msg);break;case"public":await this.cmdSetMode(jid,msg,isOwner,"public");break;case"private":await this.cmdSetMode(jid,msg,isOwner,"private");break;case"mediafire":case"mf":await this.cmdMediaFire(jid,msg,args);break;case"film":case"movie":case"movies":case"films":await this.cmdFilm(jid,msg,args,false);break;case"filmdub":case"dub":case"sinhaladub":await this.cmdFilm(jid,msg,args,true);break;case"cinesubz":case"sinhalasub":await this.cmdFilm(jid,msg,args,false);break;case"song":await this.cmdSong(jid,msg,args);break;case"video":await this.cmdVideo(jid,msg,args);break;case"tiktok":case"tt":await this.cmdSocialDownload(jid,msg,"TikTok",args);break;case"facebook":case"fb":await this.cmdSocialDownload(jid,msg,"Facebook",args);break;case"instagram":case"ig":await this.cmdSocialDownload(jid,msg,"Instagram",args);break;case"twitter":case"x":await this.cmdSocialDownload(jid,msg,"Twitter",args);break;case"img":case"image":await this.cmdImage(jid,msg,args);break;case"sticker":case"s":await this.cmdSticker(jid,msg);break;case"ai":case"ask":case"gemini":await this.cmdAi(jid,msg,args);break;case"groupinfo":case"group":await this.cmdGroupInfo(jid,msg,isGroup);break;case"admins":await this.cmdAdmins(jid,msg,isGroup);break;case"tagall":case"everyone":await this.cmdTagAll(jid,msg,isGroup,args);break;case"hidetag":await this.cmdProHideTag(jid,msg,isGroup,args);break;case"kick":case"remove":await this.cmdGroupKick(jid,msg,isGroup,args);break;case"add":await this.cmdGroupAdd(jid,msg,isGroup,args);break;case"promote":await this.cmdGroupPromote(jid,msg,isGroup,args);break;case"demote":await this.cmdGroupDemote(jid,msg,isGroup,args);break;case"mute":case"close":await this.cmdProMute(jid,msg,isGroup,true);break;case"unmute":case"open":await this.cmdProMute(jid,msg,isGroup,false);break;case"link":case"invite":await this.cmdGroupInviteLink(jid,msg,isGroup);break;case"revoke":await this.cmdGroupRevokeInvite(jid,msg,isGroup);break;case"setname":case"subject":await this.cmdGroupSetName(jid,msg,isGroup,args);break;case"setdesc":await this.cmdGroupSetDesc(jid,msg,isGroup,args);break;case"warn":await this.cmdProWarn(jid,msg,isGroup,args);break;case"warns":await this.cmdProViewWarns(jid,msg,isGroup);break;case"resetwarn":await this.cmdProResetWarn(jid,msg,isGroup,args);break;case"antilink":await this.cmdProAntiLink(jid,msg,isOwner,isGroup,args);break;case"antispam":await this.cmdProAntiSpam(jid,msg,isOwner,args);break;case"welcome":await this.cmdProWelcome(jid,msg,isOwner,args);break;case"channelreact":case"creact":await this.cmdToggleChannelReact(jid,msg,isOwner,args);break;case"autochat":case"smartchat":case"autoreply":case"smartreply":await this.cmdToggleAutoReply(jid,msg,isOwner,args);break;case"voicereply":case"voicereplies":case"voice":await this.cmdToggleVoiceReply(jid,msg,isOwner,args);break;case"botname":case"setbotname":await this.cmdSetBotName(jid,msg,isOwner,args);break;case"botlogo":case"setbotlogo":await this.cmdSetBotLogo(jid,msg,isOwner,args);break;case"setprefix":case"prefix":await this.cmdSetPrefix(jid,msg,isOwner,args);break;case"guess":await this.cmdGuess(jid,msg,args);break;case"quiz":await this.cmdQuiz(jid,msg);break;case"roll":await this.cmdRoll(jid,msg);break;case"flip":await this.cmdFlip(jid,msg);break;case"voicetrans":case"vtranslate":await this.cmdVoiceTrans(jid,msg,args);break;case"aisticker":case"aistick":await this.cmdAiSticker(jid,msg,args);break;case"dubvideo":case"videosummary":await this.cmdDubVideo(jid,msg,args);break;case"shazam":case"findsong":await this.cmdShazam(jid,msg);break;case"cv":case"resume":await this.cmdCVGenerator(jid,msg,args);break;case"bill":case"splitbill":await this.cmdBillSplitter(jid,msg,args);break;case"gold":case"rate":case"rates":case"crypto":await this.cmdGoldRates(jid,msg);break;case"math":case"solve":await this.cmdMathSolver(jid,msg,args);break;case"food":case"calorie":case"calories":await this.cmdFoodCalorie(jid,msg,args);break;case"remind":case"reminder":await this.cmdReminder(jid,msg,args);break;case"transcribe":case"vtext":await this.cmdTranscribe(jid,msg);break;case"slot":case"slots":await this.cmdSlotGame(jid,msg);break;case"leaderboard":case"top":await this.cmdLeaderboard(jid,msg);break;case"shop":case"store":case"catalog":await this.cmdShop(jid,msg,args);break;case"invoice":case"billcreate":await this.cmdInvoice(jid,msg,args);break;case"play":await this.cmdProPlay(jid,msg,args);break;case"audio":await this.cmdProAudio(jid,msg,args);break;case"ytsearch":await this.cmdProYtSearch(jid,msg,args);break;case"lyrics":await this.cmdProLyrics(jid,msg,args);break;case"translate":case"tr":await this.cmdProTranslate(jid,msg,args);break;case"summarize":await this.cmdProSummarize(jid,msg,args);break;case"write":await this.cmdProWrite(jid,msg,args);break;case"code":await this.cmdProCode(jid,msg,args);break;case"imagine":await this.cmdProImagine(jid,msg,args);break;case"ocr":await this.cmdProOcr(jid,msg,args);break;case"broadcast":await this.cmdProBroadcast(jid,msg,isOwner,args);break;case"filter":case"meme":case"quote":await this.cmdProImageTools(jid,msg,command,args);break;default:await this.reply(jid,msg,`\u2753 Unknown command: *${prefix}${command}*
+Only the bot owner (+${this.state.config.ownerNumber}) can execute commands.`);return}try{switch(command){case"menu":case"start":await this.cmdMenu(jid,msg,args);break;case"settings":case"setting":case"config":await this.cmdSettings(jid,msg,isOwner,args);break;case"upgrade":case"pro":await this.sendProRequiredReply(jid,msg,"upgrade");break;case"games":case"game":await this.cmdMenu(jid,msg,"games");break;case"help":await this.cmdHelp(jid,msg);break;case"ping":await this.cmdPing(jid,msg);break;case"owner":await this.cmdOwner(jid,msg);break;case"public":await this.cmdSetMode(jid,msg,isOwner,"public");break;case"private":await this.cmdSetMode(jid,msg,isOwner,"private");break;case"mediafire":case"mf":await this.cmdMediaFire(jid,msg,args);break;case"cineru":case"cinerulk":case"cinerusub":case"filmset":case"set":await this.cmdCineru(jid,msg,args);break;case"film":case"movie":case"movies":case"films":await this.cmdFilm(jid,msg,args,false);break;case"filmdub":case"dub":case"sinhaladub":await this.cmdFilm(jid,msg,args,true);break;case"cinesubz":case"sinhalasub":await this.cmdFilm(jid,msg,args,false);break;case"song":await this.cmdSong(jid,msg,args);break;case"video":await this.cmdVideo(jid,msg,args);break;case"tiktok":case"tt":await this.cmdSocialDownload(jid,msg,"TikTok",args);break;case"facebook":case"fb":await this.cmdSocialDownload(jid,msg,"Facebook",args);break;case"instagram":case"ig":await this.cmdSocialDownload(jid,msg,"Instagram",args);break;case"twitter":case"x":await this.cmdSocialDownload(jid,msg,"Twitter",args);break;case"img":case"image":await this.cmdImage(jid,msg,args);break;case"sticker":case"s":await this.cmdSticker(jid,msg);break;case"ai":case"ask":case"gemini":await this.cmdAi(jid,msg,args);break;case"groupinfo":case"group":await this.cmdGroupInfo(jid,msg,isGroup);break;case"admins":await this.cmdAdmins(jid,msg,isGroup);break;case"tagall":case"everyone":await this.cmdTagAll(jid,msg,isGroup,args);break;case"hidetag":await this.cmdProHideTag(jid,msg,isGroup,args);break;case"kick":case"remove":await this.cmdGroupKick(jid,msg,isGroup,args);break;case"add":await this.cmdGroupAdd(jid,msg,isGroup,args);break;case"promote":await this.cmdGroupPromote(jid,msg,isGroup,args);break;case"demote":await this.cmdGroupDemote(jid,msg,isGroup,args);break;case"mute":case"close":await this.cmdProMute(jid,msg,isGroup,true);break;case"unmute":case"open":await this.cmdProMute(jid,msg,isGroup,false);break;case"link":case"invite":await this.cmdGroupInviteLink(jid,msg,isGroup);break;case"revoke":await this.cmdGroupRevokeInvite(jid,msg,isGroup);break;case"setname":case"subject":await this.cmdGroupSetName(jid,msg,isGroup,args);break;case"setdesc":await this.cmdGroupSetDesc(jid,msg,isGroup,args);break;case"warn":await this.cmdProWarn(jid,msg,isGroup,args);break;case"warns":await this.cmdProViewWarns(jid,msg,isGroup);break;case"resetwarn":await this.cmdProResetWarn(jid,msg,isGroup,args);break;case"antilink":await this.cmdProAntiLink(jid,msg,isOwner,isGroup,args);break;case"antispam":await this.cmdProAntiSpam(jid,msg,isOwner,args);break;case"welcome":await this.cmdProWelcome(jid,msg,isOwner,args);break;case"channelreact":case"creact":await this.cmdToggleChannelReact(jid,msg,isOwner,args);break;case"autochat":case"smartchat":case"autoreply":case"smartreply":await this.cmdToggleAutoReply(jid,msg,isOwner,args);break;case"voicereply":case"voicereplies":case"voice":await this.cmdToggleVoiceReply(jid,msg,isOwner,args);break;case"botname":case"setbotname":await this.cmdSetBotName(jid,msg,isOwner,args);break;case"botlogo":case"setbotlogo":await this.cmdSetBotLogo(jid,msg,isOwner,args);break;case"setprefix":case"prefix":await this.cmdSetPrefix(jid,msg,isOwner,args);break;case"guess":await this.cmdGuess(jid,msg,args);break;case"quiz":await this.cmdQuiz(jid,msg);break;case"roll":await this.cmdRoll(jid,msg);break;case"flip":await this.cmdFlip(jid,msg);break;case"voicetrans":case"vtranslate":await this.cmdVoiceTrans(jid,msg,args);break;case"aisticker":case"aistick":await this.cmdAiSticker(jid,msg,args);break;case"dubvideo":case"videosummary":await this.cmdDubVideo(jid,msg,args);break;case"shazam":case"findsong":await this.cmdShazam(jid,msg);break;case"cv":case"resume":await this.cmdCVGenerator(jid,msg,args);break;case"bill":case"splitbill":await this.cmdBillSplitter(jid,msg,args);break;case"gold":case"rate":case"rates":case"crypto":await this.cmdGoldRates(jid,msg);break;case"math":case"solve":await this.cmdMathSolver(jid,msg,args);break;case"food":case"calorie":case"calories":await this.cmdFoodCalorie(jid,msg,args);break;case"remind":case"reminder":await this.cmdReminder(jid,msg,args);break;case"transcribe":case"vtext":await this.cmdTranscribe(jid,msg);break;case"slot":case"slots":await this.cmdSlotGame(jid,msg);break;case"leaderboard":case"top":await this.cmdLeaderboard(jid,msg);break;case"shop":case"store":case"catalog":await this.cmdShop(jid,msg,args);break;case"invoice":case"billcreate":await this.cmdInvoice(jid,msg,args);break;case"play":await this.cmdProPlay(jid,msg,args);break;case"audio":await this.cmdProAudio(jid,msg,args);break;case"ytsearch":await this.cmdProYtSearch(jid,msg,args);break;case"lyrics":await this.cmdProLyrics(jid,msg,args);break;case"translate":case"tr":await this.cmdProTranslate(jid,msg,args);break;case"summarize":await this.cmdProSummarize(jid,msg,args);break;case"write":await this.cmdProWrite(jid,msg,args);break;case"code":await this.cmdProCode(jid,msg,args);break;case"imagine":await this.cmdProImagine(jid,msg,args);break;case"ocr":await this.cmdProOcr(jid,msg,args);break;case"broadcast":await this.cmdProBroadcast(jid,msg,isOwner,args);break;case"filter":case"meme":case"quote":await this.cmdProImageTools(jid,msg,command,args);break;default:await this.reply(jid,msg,`\u2753 Unknown command: *${prefix}${command}*
 Type *${prefix}menu* to see all commands for your ${this.state.config.plan.toUpperCase()} plan.`);break}}catch(err){this.addLog("ERROR",`Error executing command '${command}': ${err?.message||err}`);await this.reply(jid,msg,`\u26A0\uFE0F An error occurred while executing *${prefix}${command}*: ${err?.message||"Internal error"}`)}}async reply(jid,quotedMsg,text){if(!this.sock)return;await this.sock.sendMessage(jid,{text},{quoted:quotedMsg})}async sendAudio(jid,quotedMsg,audioBuffer,fileName,title,thumbnailUrl,sourceUrl){if(!this.sock)return false;try{await this.sock.sendMessage(jid,{audio:audioBuffer,mimetype:"audio/mp4",ptt:false,fileName,contextInfo:{externalAdReply:{title:title||"YASHI HALLS AUDIO",body:"Official Audio Engine",thumbnailUrl:thumbnailUrl||BRAND_LOGO_URL,sourceUrl:sourceUrl||WHATSAPP_CHANNEL_URL,mediaType:1,renderLargerThumbnail:true}}},{quoted:quotedMsg});this.addLog("INFO",`\u2705 Audio message delivered to ${jid}: ${fileName} (${(audioBuffer.length/1024/1024).toFixed(2)} MB)`);return true}catch(err){this.addLog("ERROR",`Failed to send audio message: ${err?.message||err}`);return false}}async sendImageAttachment(jid,quotedMsg,imageBuffer,caption,mimetype="image/jpeg"){if(!this.sock)return false;try{await this.sock.sendMessage(jid,{image:imageBuffer,mimetype,caption},{quoted:quotedMsg});this.addLog("INFO",`\u2705 Image attachment delivered to ${jid} (${(imageBuffer.length/1024).toFixed(1)} KB)`);return true}catch(err){this.addLog("ERROR",`Failed to send image attachment: ${err?.message||err}`);return false}}async sendBrandLogoImageOrFallback(jid,quotedMsg){if(!this.sock)return false;try{await this.sock.sendMessage(jid,{image:{url:this.state.config.botLogoUrl||BRAND_LOGO_URL},caption:`\u{1F451} *${this.state.config.botName.toUpperCase()}* \u{1F451}
 _World-Class WhatsApp Bot Architecture_
 \u26A1 *Channel:* ${WHATSAPP_CHANNEL_URL}
@@ -608,7 +650,103 @@ _${footer}_`;try{await this.sock.sendMessage(jid,{text:formattedText},{quoted:qu
       await this.reply(jid, msg, `❌ *MediaFire Error:* ${err?.message || "Error occurred"}`);
     }
   }
-async cmdFilm(jid,msg,query,onlyDub=false){const p=this.state.config.prefix;const cleanQuery=(query||"").trim();if(!cleanQuery){const dubTitle=onlyDub?"SINHALA DUBBED MOVIES (\u0DC4\u0DAC\u0D9A\u0DD0\u0DC0\u0DD6 \u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7)":"MOVIE & FILM DOWNLOADER (\u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7 \u0DB6\u0DCF\u0D9C\u0DAD\u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DCA)";await this.reply(jid,msg,`\u{1F3AC} *${dubTitle}* \u{1F37F}
+  async cmdCineru(jid: string, msg: any, query?: string) {
+    const p = this.state.config.prefix;
+    const cleanQuery = (query || "").trim();
+
+    if (!cleanQuery) {
+      const guideText = `
+╭───「 🇱🇰 *CINERU.LK MOVIE & SUBTITLE HUB* 」───╮
+│
+│ 🎬 Search any movie, TV series or film set
+│ 📝 Direct Sinhala Subtitle (.srt / .zip) files
+│ 📥 High-Speed 480p / 720p / 1080p Cloud Mirrors
+│
+╰──────────────────────────────────────────────╯
+
+💡 *How to Use:*
+• *${p}cineru <movie name>* (e.g. *${p}cineru Deadpool*)
+• *${p}cineru <franchise> set* (e.g. *${p}cineru Harry Potter set*)
+• *${p}cineru <series>* (e.g. *${p}cineru Loki*)
+
+🔥 *Popular Film Sets Available:*
+• Harry Potter (1-8 Complete Set)
+• Fast & Furious (1-10 Franchise Set)
+• John Wick (1-4 Complete Set)
+• KGF Chapters 1 & 2
+• Lord of the Rings Extended Trilogy
+
+_POWERED BY YASHI HALLS & CINERU.LK_
+`.trim();
+
+      await this.sendInteractiveButtonsOrFallback(jid, msg, {
+        text: guideText,
+        title: "🇱🇰 CINERU.LK MOVIE HUB",
+        mode: "buttons",
+        buttons: [
+          { buttonId: `${p}cineru harry potter set`, buttonText: { displayText: "🧙 HARRY POTTER SET" } },
+          { buttonId: `${p}cineru fast and furious set`, buttonText: { displayText: "🏎️ FAST & FURIOUS SET" } },
+          { buttonId: `${p}cineru deadpool`, buttonText: { displayText: "🍿 DEADPOOL" } }
+        ],
+        urls: [{ displayText: "🌐 VISIT CINERU.LK", url: "https://cineru.lk/" }]
+      });
+      return;
+    }
+
+    // Check for Film Set / Franchise Set first
+    const filmSet = searchFilmSets(cleanQuery);
+    if (filmSet) {
+      await this.reply(jid, msg, `🔎 *Searching Cineru.lk for film set "${filmSet.setTitle}"...*`);
+      const setCard = formatFilmSetCard(filmSet, p);
+      if (filmSet.posterUrl && this.sock) {
+        try {
+          await this.sock.sendMessage(jid, { image: { url: filmSet.posterUrl }, caption: setCard }, { quoted: msg });
+          return;
+        } catch {}
+      }
+      await this.reply(jid, msg, setCard);
+      return;
+    }
+
+    // Individual Movie on Cineru.lk
+    await this.reply(jid, msg, `🔎 *Searching Cineru.lk for "${cleanQuery}" (Movies, Downloads & Sinhala Subtitles)...*`);
+    try {
+      const results = await searchMovies(cleanQuery, false);
+      if (!results || results.length === 0) {
+        await this.reply(jid, msg, `❌ *"${cleanQuery}" was not found on Cineru.lk.*\nTry checking spelling or visit: https://cineru.lk/?s=${encodeURIComponent(cleanQuery)}`);
+        return;
+      }
+      const movie = results[0];
+      const card = formatMovieCard(movie, p);
+      if (movie.posterUrl && this.sock) {
+        try {
+          await this.sock.sendMessage(jid, { image: { url: movie.posterUrl }, caption: card }, { quoted: msg });
+          return;
+        } catch {}
+      }
+      await this.reply(jid, msg, card);
+    } catch (err: any) {
+      this.addLog("ERROR", `Cineru search error: ${err?.message || err}`);
+      await this.reply(jid, msg, `❌ *Cineru Search Error:* ${err?.message || "Error occurred"}`);
+    }
+  }
+
+async cmdFilm(jid,msg,query,onlyDub=false){const p=this.state.config.prefix;const cleanQuery=(query||"").trim();
+    // Check if query is asking for a film set
+    const detectedSet = searchFilmSets(cleanQuery);
+    if (detectedSet) {
+      await this.reply(jid, msg, `🔎 *Searching Cineru.lk for film set "${detectedSet.setTitle}"...*`);
+      const setCard = formatFilmSetCard(detectedSet, p);
+      if (detectedSet.posterUrl && this.sock) {
+        try {
+          await this.sock.sendMessage(jid, { image: { url: detectedSet.posterUrl }, caption: setCard }, { quoted: msg });
+          return;
+        } catch {}
+      }
+      await this.reply(jid, msg, setCard);
+      return;
+    }
+if(!cleanQuery){const dubTitle=onlyDub?"SINHALA DUBBED MOVIES (\u0DC4\u0DAC\u0D9A\u0DD0\u0DC0\u0DD6 \u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7)":"MOVIE & FILM DOWNLOADER (\u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7 \u0DB6\u0DCF\u0D9C\u0DAD\u0D9A\u0DD2\u0DBB\u0DD3\u0DB8\u0DCA)";await this.reply(jid,msg,`\u{1F3AC} *${dubTitle}* \u{1F37F}
 \u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
 \u0D9A\u0DBB\u0DD4\u0DAB\u0DCF\u0D9A\u0DBB \u0DC3\u0DDC\u0DBA\u0DB1 \u0DA0\u0DD2\u0DAD\u0DCA\u200D\u0DBB\u0DB4\u0DA7\u0DBA\u0DDA \u0DB1\u0DB8 \u0DBD\u0DB6\u0DCF \u0DAF\u0DD9\u0DB1\u0DCA\u0DB1.
 _Please enter a movie title to search._
@@ -717,10 +855,16 @@ _Searching for "${cleanQuery}" in Sinhala subtitle & dub cloud..._`);try{const r
     // CATEGORY 2: MOVIES & CINEMA
     if (cat === '2' || cat === 'movie' || cat === 'movies' || cat === 'film' || cat === 'films' || cat === 'filmdub' || cat === 'dub' || cat === 'sinhalasub' || cat === 'cinesubz') {
       const text = `
-╭───「 *MOVIES & CINEMA* 」───╮
+╭───「 *MOVIES & CINEMA (CINERU.LK)* 」───╮
+│
+│ 🇱🇰 *${p}cineru <name>*
+│    Cineru.lk movie search, cloud downloads & subtitles
+│
+│ 📦 *${p}cineru <franchise> set*
+│    Complete film sets (Harry Potter, Fast & Furious, etc.)
 │
 │ 🎬 *${p}film <name>*
-│    Search movies & direct download links
+│    Search movies & direct streaming links
 │
 │ 🎙️ *${p}filmdub <name>*
 │    Sinhala dubbed movies, cartoons & series
@@ -734,7 +878,7 @@ _Searching for "${cleanQuery}" in Sinhala subtitle & dub cloud..._`);try{const r
 │ 📝 *${p}sinhalasub <name>*
 │    Baiscope & Sinhala subtitles search
 │
-╰─────────────────────────────╯
+╰────────────────────────────────────────╯
 💡 *Usage:* Type *${p}film Avatar* or *${p}filmdub Kung Fu Panda*
 ↩️ *Back to Menu:* Type *0* or *${p}menu*
 `.trim();
@@ -1020,8 +1164,8 @@ _Searching for "${cleanQuery}" in Sinhala subtitle & dub cloud..._`);try{const r
 │    ${p}fb • ${p}ig • ${p}twitter • ${p}apk
 │
 │ 🎬 *2. MOVIES & CINEMA*
-│    ${p}film • ${p}filmdub • ${p}movie
-│    ${p}cinesubz • ${p}sinhalasub
+│    ${p}cineru • ${p}film • ${p}filmdub
+│    ${p}cinesubz • ${p}sinhalasub • .cineru <set>
 │
 │ 🤖 *3. AI & SMART SUITE*
 │    ${p}ai • ${p}translate • ${p}summarize • ${p}write
